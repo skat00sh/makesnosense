@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>makesnosense.io — counterintuitive ideas you can touch</title>
+<meta name="description" content="Counterintuitive ideas, rebuilt as things you can poke until they click." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='22' r='6' fill='%23E2563F'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #F5F6F9;
+    --paper-2: #FFFFFF;
+    --ink: #15171E;
+    --muted: #5A6172;
+    --line: #E2E5EC;
+    --truth: #3D3AE0;
+    --guess: #E2563F;
+    --truth-wash: #ECEBFB;
+
+    --display: 'Space Grotesk', system-ui, sans-serif;
+    --body: 'Newsreader', Georgia, serif;
+    --mono: 'Space Mono', ui-monospace, monospace;
+
+    --col: 720px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 19px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a { color: var(--truth); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  .wrap { max-width: var(--col); margin: 0 auto; padding: 0 28px; }
+
+  header.site { padding: 30px 0 8px; }
+  .wordmark {
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1px;
+  }
+  .wordmark b { font-weight: 700; }
+  .wordmark .tld { color: var(--muted); }
+  .wordmark .dot { color: var(--guess); font-weight: 700; }
+
+  .hero { padding: 52px 0 16px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    margin: 0 0 22px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(36px, 6.2vw, 60px);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    margin: 0 0 22px;
+  }
+  h1 .flip { color: var(--guess); font-style: normal; }
+  .lede {
+    font-size: 21px;
+    color: var(--muted);
+    margin: 0 0 8px;
+    max-width: 34em;
+  }
+
+  .demo {
+    margin: 40px 0 8px;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 28px 24px;
+    box-shadow: 0 1px 0 rgba(21,23,30,0.03), 0 18px 40px -28px rgba(21,23,30,0.22);
+  }
+  .demo .figtag {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .demo .q {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 21px;
+    line-height: 1.3;
+    margin: 0 0 22px;
+    letter-spacing: -0.01em;
+  }
+
+  .readout { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 4px; }
+  .readout .n {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 4px 10px;
+  }
+  .readout .n span { color: var(--muted); font-weight: 400; }
+  .readout .p {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 40px;
+    letter-spacing: -0.02em;
+    color: var(--truth);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .readout .p small { font-size: 20px; font-weight: 500; color: var(--muted); }
+
+  svg.curve { display: block; width: 100%; height: 150px; margin: 14px 0 4px; overflow: visible; }
+
+  .slider-row { margin-top: 14px; }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 4px; border-radius: 4px;
+    background: linear-gradient(90deg, var(--truth) 0%, var(--truth) var(--fill,30%), var(--line) var(--fill,30%), var(--line) 100%);
+    outline: none; cursor: pointer; margin: 10px 0 6px;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--paper-2); border: 2px solid var(--truth);
+    box-shadow: 0 2px 6px rgba(61,58,224,0.35); cursor: grab;
+  }
+  input[type="range"]::-webkit-slider-thumb:active { cursor: grabbing; }
+  input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--paper-2); border: 2px solid var(--truth);
+    box-shadow: 0 2px 6px rgba(61,58,224,0.35); cursor: grab;
+  }
+  .scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .verdict {
+    font-family: var(--body);
+    font-style: italic;
+    font-size: 17px;
+    color: var(--muted);
+    margin-top: 16px;
+    min-height: 1.6em;
+  }
+  .verdict b { font-style: normal; color: var(--guess); font-family: var(--display); font-weight: 600; }
+
+  .manifesto { padding: 56px 0 8px; font-size: 22px; line-height: 1.55; }
+  .manifesto p { margin: 0 0 18px; }
+  .manifesto .pull { font-family: var(--display); font-weight: 500; letter-spacing: -0.01em; }
+
+  footer.site {
+    padding: 64px 0 60px;
+    margin-top: 24px;
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+    font-family: var(--mono); font-size: 12.5px; color: var(--muted);
+  }
+  footer.site a { color: var(--muted); }
+  footer.site a:hover { color: var(--ink); }
+
+  @media (max-width: 560px) {
+    body { font-size: 18px; }
+    .readout .p { font-size: 34px; }
+    .demo { padding: 22px 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  .reveal { opacity: 0; transform: translateY(10px); animation: rise 0.7s cubic-bezier(.2,.7,.2,1) forwards; }
+  .r2 { animation-delay: 0.08s; }
+  .r3 { animation-delay: 0.16s; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+
+  <div class="wrap">
+    <header class="site">
+      <span class="wordmark"><b>makesnosense</b><span class="dot">.</span><span class="tld">io</span></span>
+    </header>
+  </div>
+
+  <div class="wrap">
+    <section class="hero">
+      <p class="eyebrow reveal">Counterintuitive ideas, made playable</p>
+      <h1 class="reveal r2">Your intuition is confident.<br />It's also <span class="flip">wrong</span>.</h1>
+      <p class="lede reveal r3">Some things refuse to make sense until you can poke at them. So that's what this is: hard ideas rebuilt as things you touch until they click.</p>
+
+      <div class="demo reveal r3" id="demo">
+        <div class="figtag">Figure 0 — drag it</div>
+        <p class="q">Gather a room of strangers. How many do you need before two of them probably share a birthday?</p>
+
+        <div class="readout">
+          <span class="n"><span>people:</span> <b id="nLabel">23</b></span>
+          <span class="p"><span id="pLabel">50</span><small>% chance of a match</small></span>
+        </div>
+
+        <svg class="curve" id="curve" viewBox="0 0 600 150" preserveAspectRatio="none" aria-hidden="true">
+          <line id="halfLine" x1="0" y1="75" x2="600" y2="75" stroke="var(--guess)" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"/>
+          <path id="area" fill="var(--truth-wash)" d=""/>
+          <path id="line" fill="none" stroke="var(--truth)" stroke-width="2.5" d=""/>
+          <circle id="dot" r="6" fill="var(--paper-2)" stroke="var(--truth)" stroke-width="3" cx="0" cy="0"/>
+        </svg>
+
+        <div class="slider-row">
+          <input type="range" id="slider" min="2" max="75" value="23" step="1" aria-label="Number of people" />
+          <div class="scale"><span>2</span><span>75 people</span></div>
+        </div>
+
+        <p class="verdict" id="verdict"></p>
+      </div>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section class="manifesto">
+      <p class="pull">A good explanation can be argued with. A good demo can't.</p>
+      <p>Every piece here starts where your gut is certain and the math disagrees — then hands you the controls so you can prove it to yourself instead of taking my word for it. No equations you have to trust on faith. Just the thing, running, in front of you.</p>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <footer class="site">
+      <span>makesnosense.io</span>
+      <span>built to be argued with, then proven</span>
+    </footer>
+  </div>
+
+<script>
+(function () {
+  var slider = document.getElementById('slider');
+  var nLabel = document.getElementById('nLabel');
+  var pLabel = document.getElementById('pLabel');
+  var verdict = document.getElementById('verdict');
+  var areaEl = document.getElementById('area');
+  var lineEl = document.getElementById('line');
+  var dotEl = document.getElementById('dot');
+
+  var W = 600, H = 150, MINN = 2, MAXN = 75;
+
+  function pMatch(n) {
+    var p = 1;
+    for (var k = 0; k < n; k++) p *= (365 - k) / 365;
+    return 1 - p;
+  }
+  function x(n) { return (n - MINN) / (MAXN - MINN) * W; }
+  function y(p) { return H - p * H; }
+
+  (function buildCurve() {
+    var d = '', a = 'M0,' + H;
+    for (var n = MINN; n <= MAXN; n++) {
+      var px = x(n).toFixed(1), py = y(pMatch(n)).toFixed(1);
+      d += (n === MINN ? 'M' : 'L') + px + ',' + py + ' ';
+      a += 'L' + px + ',' + py + ' ';
+    }
+    a += 'L' + W + ',' + H + ' Z';
+    lineEl.setAttribute('d', d.trim());
+    areaEl.setAttribute('d', a);
+  })();
+
+  function verdictText(n, p) {
+    if (n < 10) return 'Feels impossible, right? Keep going.';
+    if (n < 20) return 'Still feels too low. It isn\u2019t.';
+    if (n < 23) return 'Almost. One or two more people.';
+    if (n === 23) return 'Twenty-three. <b>More likely than not.</b> Seriously.';
+    if (n < 41) return 'Past the tipping point and climbing fast.';
+    if (n < 57) return 'A near-certainty in a smallish room.';
+    return 'At <b>' + Math.round(p * 100) + '%</b> it\u2019s basically guaranteed.';
+  }
+
+  function update() {
+    var n = parseInt(slider.value, 10);
+    var p = pMatch(n);
+    var pct = p * 100;
+    nLabel.textContent = n;
+    pLabel.textContent = pct < 99.5 ? pct.toFixed(0) : '99.9';
+    verdict.innerHTML = verdictText(n, p);
+    dotEl.setAttribute('cx', x(n).toFixed(1));
+    dotEl.setAttribute('cy', y(p).toFixed(1));
+    slider.style.setProperty('--fill', ((n - MINN) / (MAXN - MINN) * 100).toFixed(1) + '%');
+  }
+
+  slider.addEventListener('input', update);
+  update();
+})();
+</script>
+</body>
+</html>
