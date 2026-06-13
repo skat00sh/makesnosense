@@ -8,15 +8,8 @@
 <style>
   body{ margin:0; background:#F5F6F9; color:#15171E; font-family:'Newsreader',Georgia,serif; -webkit-font-smoothing:antialiased; }
   .wrap{ max-width:880px; margin:0 auto; padding:62px 24px 120px; }
-  .post-kicker{ font-family:'Space Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#5A6172; margin-bottom:20px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .post-kicker a.brand{ display:inline-flex; align-items:center; gap:9px; color:inherit; text-decoration:none; }
-  .post-kicker a.brand:hover, .post-kicker a.brand:hover *{ text-decoration:none; }
-  .post-kicker svg.logo-mark{ width:18px; height:18px; flex:0 0 auto; display:block; }
-  .post-kicker .wordmark{ font-family:'Space Mono',monospace; font-size:12px; letter-spacing:.02em; color:#15171E; display:inline-flex; align-items:baseline; gap:1px; text-transform:none; }
-  .post-kicker .wordmark b{ font-weight:700; }
-  .post-kicker .wordmark .tld{ color:#5A6172; }
-  .post-kicker .wordmark .dot{ color:#E2563F; font-weight:700; }
-  .post-kicker .sep{ color:#9aa0ac; }
+  .post-kicker{ font-family:'Space Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#5A6172; margin-bottom:20px; }
+  .post-kicker a{ color:#3D3AE0; text-decoration:none; }
   .post-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:42px; line-height:1.06; letter-spacing:-.022em; color:#15171E; margin:0; }
   .post-title .sub{ display:block; font-size:23px; font-weight:500; color:#5A6172; letter-spacing:-.01em; margin-top:10px; }
   .post-meta{ font-family:'Space Mono',monospace; font-size:11.5px; color:#9aa0ac; margin:22px 0 34px; }
@@ -639,17 +632,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="post-kicker">
-    <a class="brand" href="./index.html" aria-label="makesnosense.io home">
-      <svg class="logo-mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M 41 5 C 28 5, 17 13, 13 25 L 25 30 C 28 22, 34 17, 42 17 C 51 17, 58 23, 58 31 C 58 39, 53 44, 44 49 C 34 55, 29 62, 29 71 L 41 71 C 41 63, 45 58, 53 54 C 64 48, 70 41, 70 30 C 70 16, 58 5, 41 5 Z" fill="#15171E"/>
-        <circle cx="36" cy="86" r="11.5" fill="#E2563F"/>
-        <path d="M 31 86 L 35 90 L 42 81" stroke="#FFFFFF" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span class="wordmark"><b>makesnosense</b><span class="dot">.</span><span class="tld">io</span></span>
-    </a>
-    <span class="sep">&middot;</span> an interactive build
-  </div>
+  <div class="post-kicker"><a href="https://makesnosense.io">makesnosense.io</a> &middot; an interactive build</div>
   <h1 class="post-title">Learning Vision Transformers<span class="sub">(Without the Language-Transformer Proxy)</span></h1>
   <div class="post-meta">Every figure is a toy you can poke &middot; flip a card to meet the paper</div>
   <p class="post-lead">Almost every explanation of the Vision Transformer I&rsquo;ve come across reaches for the language transformer first, patches become &ldquo;tokens, like words,&rdquo; attention is &ldquo;the same idea as in BERT.&rdquo; That&rsquo;s a natural route, and probably how most of us first met the model: it&rsquo;s how the research actually moved, transformers winning at language well before vision. But it always felt to me a little like a proxy, explaining a model whose input is an <em>image</em> by way of one whose input is text. This is my attempt at the other path: building a Vision Transformer from the image upward: patches, numbers, tokens, position, attention, entirely by hand (with Claude&rsquo;s help), on one small picture of a tree, with as little borrowed from the language as was needed.</p>

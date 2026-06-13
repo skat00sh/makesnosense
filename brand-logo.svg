@@ -1,0 +1,5 @@
+<svg class="logo-mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M 41 5 C 28 5, 17 13, 13 25 L 25 30 C 28 22, 34 17, 42 17 C 51 17, 58 23, 58 31 C 58 39, 53 44, 44 49 C 34 55, 29 62, 29 71 L 41 71 C 41 63, 45 58, 53 54 C 64 48, 70 41, 70 30 C 70 16, 58 5, 41 5 Z" fill="#15171E"/>
+  <circle cx="36" cy="86" r="11.5" fill="#E2563F"/>
+  <path d="M 31 86 L 35 90 L 42 81" stroke="#FFFFFF" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

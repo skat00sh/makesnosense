@@ -1,0 +1,35 @@
+/* ============================================================
+   makesnosense.io — shared brand styles
+   Include after the page's :root/font-face declarations, or
+   make sure these CSS variables exist:
+     --ink, --muted, --line, --truth, --guess, --paper, --paper-2
+     --display (Space Grotesk), --mono (Space Mono)
+   ============================================================ */
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.brand svg.logo-mark {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  display: block;
+}
+.brand .wordmark {
+  font-family: var(--mono);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+}
+.brand .wordmark b { font-weight: 700; }
+.brand .wordmark .tld { color: var(--muted); }
+.brand .wordmark .dot { color: var(--guess); font-weight: 700; }
+
+/* Header wrapper, reuse existing header.site padding per page */
+header.site .brand { color: inherit; text-decoration: none; }
+header.site a.brand:hover .wordmark { text-decoration: none; }
