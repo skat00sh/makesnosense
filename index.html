@@ -101,6 +101,66 @@
     color: var(--muted);
     margin-bottom: 14px;
   }
+
+  .latest { padding: 8px 0 0; }
+  .latest .eyebrow { margin-bottom: 16px; }
+  .postcard {
+    display: block;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 26px 28px;
+    text-decoration: none;
+    color: var(--ink);
+    box-shadow: 0 1px 0 rgba(21,23,30,0.03), 0 18px 40px -28px rgba(21,23,30,0.22);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .postcard:hover { border-color: #cbd0da; transform: translateY(-1px); }
+  .postcard:hover, .postcard:hover * { text-decoration: none; }
+  .postcard:hover .arrow { text-decoration: underline; text-underline-offset: 3px; }
+  .postcard .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--truth);
+    margin: 0 0 10px;
+  }
+  .postcard h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 24px;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  .postcard p {
+    color: var(--muted);
+    font-size: 15.5px;
+    line-height: 1.55;
+    margin: 0;
+    max-width: 56em;
+  }
+  .postcard .arrow { color: var(--truth); font-weight: 600; }
+
+  .legend { display:flex; gap:18px; flex-wrap:wrap; font-family: var(--mono); font-size: 11px; color: var(--muted); margin: 6px 0 0; }
+  .legend .lg { display:flex; align-items:center; gap:6px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; }
+  .runbtn {
+    margin-top: 16px; font-family: var(--mono); font-size: 12px; font-weight: 700;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+    border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  }
+  .runbtn:hover { border-color: #cbd0da; background: #fff; }
+  .argument {
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line);
+    font-size: 14.5px; line-height: 1.6; color: #2c2f38;
+  }
+  .argument .lbl {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 8px;
+  }
+  .argument p { margin: 0; }
+  .argument b { font-weight: 700; color: var(--ink); }
   .demo .q {
     font-family: var(--display);
     font-weight: 500;
@@ -205,32 +265,53 @@
   <div class="wrap">
     <section class="hero">
       <p class="eyebrow reveal">Counterintuitive ideas, made playable</p>
-      <h1 class="reveal r2">Your intuition is confident.<br />It's also <span class="flip">wrong</span>.</h1>
+      <h1 class="reveal r2">Built to be argued with, then proven.</h1>
       <p class="lede reveal r3">Some things refuse to make sense until you can poke at them. So that's what this is: hard ideas rebuilt as things you touch until they click.</p>
 
       <div class="demo reveal r3" id="demo">
-        <div class="figtag">Figure 0 — drag it</div>
-        <p class="q">Gather a room of strangers. How many do you need before two of them probably share a birthday?</p>
+        <div class="figtag">Figure 0 &middot; drag it</div>
+        <p class="q">Two envelopes. One has twice as much money as the other. You pick one and look inside. Should you switch to the other one?</p>
 
         <div class="readout">
-          <span class="n"><span>people:</span> <b id="nLabel">23</b></span>
-          <span class="p"><span id="pLabel">50</span><small>% chance of a match</small></span>
+          <span class="n"><span>rounds simulated:</span> <b id="nLabel">200</b></span>
+          <span class="p"><span id="pLabel">0</span><small>% extra from always switching</small></span>
         </div>
 
         <svg class="curve" id="curve" viewBox="0 0 600 150" preserveAspectRatio="none" aria-hidden="true">
-          <line id="halfLine" x1="0" y1="75" x2="600" y2="75" stroke="var(--guess)" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"/>
-          <path id="area" fill="var(--truth-wash)" d=""/>
-          <path id="line" fill="none" stroke="var(--truth)" stroke-width="2.5" d=""/>
-          <circle id="dot" r="6" fill="var(--paper-2)" stroke="var(--truth)" stroke-width="3" cx="0" cy="0"/>
+          <line id="zeroLine" x1="0" y1="75" x2="600" y2="75" stroke="var(--ink)" stroke-width="1" stroke-dasharray="4 4" opacity="0.25"/>
+          <path id="lineDiff" fill="none" stroke="var(--truth)" stroke-width="2.5" d=""/>
+          <circle id="dotDiff" r="6" fill="var(--paper-2)" stroke="var(--truth)" stroke-width="3" cx="0" cy="0"/>
         </svg>
 
+        <div class="legend">
+          <span class="lg"><i style="background:var(--truth)"></i> average winnings, switch minus stay (as % of stay)</span>
+        </div>
+
         <div class="slider-row">
-          <input type="range" id="slider" min="2" max="75" value="23" step="1" aria-label="Number of people" />
-          <div class="scale"><span>2</span><span>75 people</span></div>
+          <input type="range" id="slider" min="5" max="600" value="200" step="5" aria-label="Number of simulated rounds" />
+          <div class="scale"><span>5 rounds</span><span>600 rounds</span></div>
         </div>
 
         <p class="verdict" id="verdict"></p>
+
+        <button class="runbtn" id="runbtn">Run new simulation &#8635;</button>
+
+        <div class="argument" id="argument">
+          <p class="lbl">The argument that says &ldquo;always switch&rdquo;</p>
+          <p>Say your envelope has <b>A</b>. The other has either <b>A/2</b> or <b>2A</b>, each &ldquo;50/50&rdquo;. Expected value of switching = 0.5&times;(A/2) + 0.5&times;(2A) = <b>1.25A</b>. That's bigger than A, so switch. But the other envelope's owner can run the exact same argument about <i>your</i> envelope. Both can't be right, and the simulation above shows they aren't: switching wins you nothing on average.</p>
+        </div>
       </div>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section class="latest">
+      <p class="eyebrow">Latest</p>
+      <a class="postcard" href="./vit.html">
+        <p class="tag">Interactive build &middot; Vision Transformers</p>
+        <h3>Learning Vision Transformers (Without the Language-Transformer Proxy)</h3>
+        <p>A Vision Transformer built from one small image, patches, tokens, position, and attention, entirely by hand, with nothing borrowed from language. <span class="arrow">Read it &rarr;</span></p>
+      </a>
     </section>
   </div>
 
@@ -254,55 +335,79 @@
   var nLabel = document.getElementById('nLabel');
   var pLabel = document.getElementById('pLabel');
   var verdict = document.getElementById('verdict');
-  var areaEl = document.getElementById('area');
-  var lineEl = document.getElementById('line');
-  var dotEl = document.getElementById('dot');
+  var lineDiff = document.getElementById('lineDiff');
+  var dotDiff = document.getElementById('dotDiff');
+  var runbtn = document.getElementById('runbtn');
 
-  var W = 600, H = 150, MINN = 2, MAXN = 75;
+  var W = 600, H = 150, MINN = 5, MAXN = 600;
 
-  function pMatch(n) {
-    var p = 1;
-    for (var k = 0; k < n; k++) p *= (365 - k) / 365;
-    return 1 - p;
-  }
-  function x(n) { return (n - MINN) / (MAXN - MINN) * W; }
-  function y(p) { return H - p * H; }
-
-  (function buildCurve() {
-    var d = '', a = 'M0,' + H;
-    for (var n = MINN; n <= MAXN; n++) {
-      var px = x(n).toFixed(1), py = y(pMatch(n)).toFixed(1);
-      d += (n === MINN ? 'M' : 'L') + px + ',' + py + ' ';
-      a += 'L' + px + ',' + py + ' ';
+  var seq = [];
+  function regen() {
+    seq = [];
+    for (var i = 0; i < MAXN; i++) {
+      var base = 1 + Math.floor(Math.random() * 100);
+      var pickSmall = Math.random() < 0.5;
+      var picked = pickSmall ? base : 2 * base;
+      var other = pickSmall ? 2 * base : base;
+      seq.push([picked, other]);
     }
-    a += 'L' + W + ',' + H + ' Z';
-    lineEl.setAttribute('d', d.trim());
-    areaEl.setAttribute('d', a);
-  })();
+  }
+  regen();
 
-  function verdictText(n, p) {
-    if (n < 10) return 'Feels impossible, right? Keep going.';
-    if (n < 20) return 'Still feels too low. It isn\u2019t.';
-    if (n < 23) return 'Almost. One or two more people.';
-    if (n === 23) return 'Twenty-three. <b>More likely than not.</b> Seriously.';
-    if (n < 41) return 'Past the tipping point and climbing fast.';
-    if (n < 57) return 'A near-certainty in a smallish room.';
-    return 'At <b>' + Math.round(p * 100) + '%</b> it\u2019s basically guaranteed.';
+  function x(n) { return (n - MINN) / (MAXN - MINN) * W; }
+  function yFromPct(pct) {
+    var clamped = Math.max(-30, Math.min(30, pct));
+    return H/2 - (clamped / 30) * (H/2 - 10);
+  }
+
+  function buildCurve() {
+    var d = '';
+    var stayTotal = 0, switchTotal = 0;
+    for (var n = 1; n <= MAXN; n++) {
+      stayTotal += seq[n-1][0];
+      switchTotal += seq[n-1][1];
+      if (n >= MINN) {
+        var pct = (switchTotal - stayTotal) / stayTotal * 100;
+        var px = x(n).toFixed(1);
+        d += (n === MINN ? 'M' : 'L') + px + ',' + yFromPct(pct).toFixed(1) + ' ';
+      }
+    }
+    lineDiff.setAttribute('d', d.trim());
+  }
+
+  function cumPct(n) {
+    var stayTotal = 0, switchTotal = 0;
+    for (var i = 0; i < n; i++) {
+      stayTotal += seq[i][0];
+      switchTotal += seq[i][1];
+    }
+    return (switchTotal - stayTotal) / stayTotal * 100;
+  }
+
+  function verdictText(n, pct) {
+    if (n < 30) return 'Noisy with few rounds, the swing can look big. Keep dragging.';
+    if (Math.abs(pct) < 1) return 'Right around <b>0%</b>, switching gains nothing on average. Just as the resolution says.';
+    return 'At ' + n + ' rounds, switching is at <b>' + (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%</b>, drifting toward 0% as the rounds pile up. Click &ldquo;run new simulation&rdquo; a few times, it never settles anywhere else.';
   }
 
   function update() {
     var n = parseInt(slider.value, 10);
-    var p = pMatch(n);
-    var pct = p * 100;
+    var pct = cumPct(n);
     nLabel.textContent = n;
-    pLabel.textContent = pct < 99.5 ? pct.toFixed(0) : '99.9';
-    verdict.innerHTML = verdictText(n, p);
-    dotEl.setAttribute('cx', x(n).toFixed(1));
-    dotEl.setAttribute('cy', y(p).toFixed(1));
+    pLabel.textContent = pct.toFixed(1);
+    verdict.innerHTML = verdictText(n, pct);
+    dotDiff.setAttribute('cx', x(n).toFixed(1));
+    dotDiff.setAttribute('cy', yFromPct(pct).toFixed(1));
     slider.style.setProperty('--fill', ((n - MINN) / (MAXN - MINN) * 100).toFixed(1) + '%');
   }
 
+  buildCurve();
   slider.addEventListener('input', update);
+  runbtn.addEventListener('click', function () {
+    regen();
+    buildCurve();
+    update();
+  });
   update();
 })();
 </script>
