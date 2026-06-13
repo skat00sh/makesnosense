@@ -1,0 +1,2555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Learning Vision Transformers (Without the Language-Transformer Proxy)</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  body{ margin:0; background:#F5F6F9; color:#15171E; font-family:'Newsreader',Georgia,serif; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:880px; margin:0 auto; padding:62px 24px 120px; }
+  .post-kicker{ font-family:'Space Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#5A6172; margin-bottom:20px; }
+  .post-kicker a{ color:#3D3AE0; text-decoration:none; }
+  .post-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:42px; line-height:1.06; letter-spacing:-.022em; color:#15171E; margin:0; }
+  .post-title .sub{ display:block; font-size:23px; font-weight:500; color:#5A6172; letter-spacing:-.01em; margin-top:10px; }
+  .post-meta{ font-family:'Space Mono',monospace; font-size:11.5px; color:#9aa0ac; margin:22px 0 34px; }
+  .post-lead{ font-size:20px; line-height:1.55; color:#2c2f38; margin:0 0 20px; }
+  .post-lead em{ font-style:italic; color:#15171E; }
+  .post-note{ font-family:'Space Grotesk',sans-serif; font-size:14.5px; line-height:1.6; color:#5A6172; border-left:3px solid #E2E5EC; padding-left:15px; margin:0 0 8px; }
+  .section{ margin:48px 0; }
+  .connect{ font-size:18.5px; line-height:1.62; color:#2c2f38; max-width:680px; margin:34px auto; }
+  .connect em{ font-style:italic; }
+  .connect code{ font-family:'Space Mono',monospace; font-size:15px; background:#EEF0F3; border-radius:4px; padding:1px 6px; }
+  .reading-list{ max-width:680px; margin:0 auto 48px; padding:0; list-style:none; font-family:'Space Grotesk',sans-serif; font-size:15px; line-height:1.6; color:#2c2f38; }
+  .reading-list li{ padding:11px 0; border-bottom:1px solid #E2E5EC; }
+  .reading-list li:last-child{ border-bottom:0; }
+  .reading-list a{ color:#3D3AE0; text-decoration:none; font-weight:600; }
+  .reading-list a:hover{ text-decoration:underline; }
+  .topic-list{ max-width:680px; margin:0 auto 40px; padding:0 0 0 22px; font-family:'Space Grotesk',sans-serif; font-size:15.5px; line-height:1.6; color:#2c2f38; }
+  .topic-list li{ padding:6px 0; }
+  .topic-list li b{ font-weight:700; }
+  .topic-list li em{ font-style:italic; font-family:'Newsreader',serif; }
+  .section .intro, .section .sub{ max-width:none !important; }
+
+/* ===== card-overview ===== */
+#card-overview { --ink:#15171E; --muted:#5A6172; --line:#E2E5EC; --soft:#F5F6F9;
+    --truth:#3D3AE0; --truth-wash:#ECEBFB; --heart:#E2563F; --heart-wash:#FBECE9;
+    --mono:'Space Mono',ui-monospace,monospace;
+    width:100%;  background:#fff; border:1px solid var(--line);
+    border-radius:16px; padding:28px 30px 30px; box-shadow:0 22px 55px -36px rgba(21,23,30,.32); max-width:none; width:100%; }
+#card-overview * { box-sizing:border-box; }
+#card-overview .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+#card-overview h2 { font-size:23px; font-weight:600; letter-spacing:-.015em; margin:0 0 6px; }
+#card-overview .sub { color:var(--muted); font-size:15px; margin:0 0 22px; max-width:54ch; line-height:1.5; }
+#card-overview .strip { display:flex; align-items:stretch; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+#card-overview .stg { flex:1 1 0; min-width:96px; border:1px solid var(--line); background:#fff; border-radius:11px;
+        padding:11px 9px 10px; cursor:pointer; text-align:center; transition:transform .12s, border-color .12s, background .12s; font-family:inherit; }
+#card-overview .stg:hover { transform:translateY(-2px); border-color:#cbd0da; }
+#card-overview .stg .num { font-family:var(--mono); font-size:11px; font-weight:700; width:20px; height:20px; line-height:20px;
+             border-radius:50%; background:var(--soft); color:var(--muted); margin:0 auto 7px; }
+#card-overview .stg .lab { font-size:12.5px; font-weight:600; line-height:1.2; letter-spacing:-.01em; }
+#card-overview .stg.active { color:#fff; border-color:transparent; }
+#card-overview .stg.active .num { background:rgba(255,255,255,.25); color:#fff; }
+#card-overview .stg:focus-visible { outline:2px solid var(--truth); outline-offset:2px; }
+#card-overview .chev { align-self:center; color:#C2C7D2; font-size:13px; flex:0 0 auto; }
+#card-overview .controls { display:flex; align-items:center; gap:14px; margin:14px 0 20px; }
+#card-overview .play { font-family:inherit; font-weight:600; font-size:13px; border:1px solid var(--line); background:#fff;
+         border-radius:8px; padding:7px 15px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+#card-overview .play:hover { border-color:#cbd0da; }
+#card-overview .pos { font-family:var(--mono); font-size:11px; color:var(--muted); }
+#card-overview .detail { display:flex; gap:24px; align-items:flex-start; border-top:1px solid var(--line); padding-top:22px; flex-wrap:wrap; }
+#card-overview .dleft { flex:1 1 300px; min-width:260px; }
+#card-overview .dright { flex:0 0 268px; }
+#card-overview .dtag { font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+         display:inline-block; padding:3px 9px; border-radius:999px; margin-bottom:11px; }
+#card-overview .detail h3 { font-size:19px; font-weight:600; letter-spacing:-.01em; margin:0 0 9px; }
+#card-overview .detail p { margin:0; font-size:15px; line-height:1.6; color:#2c2f38; }
+#card-overview .detail .micro { margin-top:13px; font-family:var(--mono); font-size:12px; color:var(--muted); }
+#card-overview .dright svg { width:100%; height:auto; display:block; background:var(--soft); border:1px solid var(--line); border-radius:10px; }
+@media (prefers-reduced-motion: reduce) {
+#card-overview .stg { transition:none; }
+}
+@media (max-width:560px) {
+#card-overview .strip { gap:5px; }
+#card-overview .chev { display:none; }
+#card-overview .stg { flex:1 1 28%; }
+}
+
+/* ===== card-patches ===== */
+#card-patches { --ink:#15171E; --muted:#5A6172; --line:#E2E5EC; --soft:#F5F6F9;
+    --truth:#3D3AE0; --heart:#E2563F; --green:#34A85B;
+    --mono:'Space Mono',ui-monospace,monospace;
+    width:100%;  background:#fff; border:1px solid var(--line);
+    border-radius:16px; padding:28px 30px 26px; box-shadow:0 22px 55px -36px rgba(21,23,30,.32); max-width:none; width:100%; }
+#card-patches * { box-sizing:border-box; }
+#card-patches .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+#card-patches h2 { font-size:22px; font-weight:600; letter-spacing:-.015em; margin:0 0 8px; }
+#card-patches .intro { color:#2c2f38; font-size:15px; line-height:1.6; margin:0 0 20px; max-width:60ch; }
+#card-patches .intro b { font-weight:600; }
+#card-patches .intro.sentences > span { display:block; margin-bottom:8px; }
+#card-patches .intro.sentences > span:last-child { margin-bottom:0; }
+#card-patches .seg { display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; margin-bottom:18px; }
+#card-patches .seg button { font-family:inherit; font-size:13px; font-weight:600; border:0; background:#fff; color:var(--muted);
+               padding:8px 16px; cursor:pointer; border-right:1px solid var(--line); display:flex; align-items:center; gap:6px; }
+#card-patches .seg button:last-child { border-right:0; }
+#card-patches .seg button.on { color:#fff; }
+#card-patches .seg .dot { width:8px; height:8px; border-radius:50%; }
+#card-patches .stage { display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start; }
+#card-patches .pane { flex:1 1 240px; min-width:236px; }
+#card-patches .cap { font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+#card-patches svg { display:block; width:100%; height:auto; }
+#card-patches .viewlabel { font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:8px; }
+#card-patches .viewlabel b { color:var(--ink); }
+#card-patches .pcap { font-size:13.5px; line-height:1.55; color:#2c2f38; margin:12px 0 0; }
+#card-patches .pcap .big { font-family:var(--mono); font-weight:700; color:var(--heart); }
+#card-patches .foot { margin-top:22px; border-top:1px solid var(--line); padding-top:16px; font-size:14px; line-height:1.6; color:#2c2f38; }
+#card-patches .foot b { font-weight:600; }
+#card-patches .seg2wrap { display:flex; align-items:center; gap:11px; margin:6px 0 18px; flex-wrap:wrap; }
+#card-patches #panel { max-width:400px; }
+#card-patches .lenslabel { font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+#card-patches { position:relative; max-width:none; width:100%; }
+#card-patches .flipbtn { position:absolute; top:20px; right:22px; z-index:6; font-family:var(--mono); font-size:11px; font-weight:700;
+            border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:8px; padding:7px 12px; cursor:pointer;
+            display:inline-flex; align-items:center; gap:7px; }
+#card-patches .flipbtn:hover { border-color:#cbd0da; background:#F5F6F9; }
+#card-patches .flipwrap { perspective:2000px; }
+#card-patches .inner { position:relative; transform-style:preserve-3d; transition:transform .65s cubic-bezier(.2,.7,.2,1); }
+#card-patches .inner.flipped { transform:rotateY(180deg); }
+#card-patches .face { -webkit-backface-visibility:hidden; backface-visibility:hidden; }
+#card-patches .back { position:absolute; inset:0; transform:rotateY(180deg); overflow:hidden; }
+#card-patches h2 { padding-right:150px; }
+#card-patches .anatcap { font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--muted); margin:16px 0 8px; }
+#card-patches .formula { font-family:var(--mono); font-size:13px; background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:13px 16px; margin:8px 0 16px; line-height:1.9; }
+#card-patches .formula .mut { color:var(--muted); font-size:11.5px; }
+#card-patches .anat-grid { display:grid; grid-template-columns:46px 1fr 1fr 1fr 1.15fr; gap:8px; align-items:stretch; }
+#card-patches .anat-eq { font-family:var(--mono); font-size:14px; background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:13px 16px; margin:8px 0 14px; line-height:1.95; text-align:center; }
+#card-patches .vH { color:#3D3AE0; font-weight:700; }
+#card-patches .vW { color:#1F9E8F; font-weight:700; }
+#card-patches .vC { color:#E2563F; font-weight:700; }
+#card-patches .vN { color:#8B2FC9; font-weight:700; }
+#card-patches .vP { color:#C77B12; font-weight:700; }
+#card-patches .vx { color:#15171E; font-weight:700; }
+#card-patches .anat-eq .mut { color:#9aa0ad; }
+#card-patches .rowlab { font-family:var(--mono); font-size:9.5px; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; line-height:1.25; }
+#card-patches .symh { text-align:center; font-family:var(--mono); font-weight:700; font-size:12px; padding:6px 4px; border-radius:7px; line-height:1.2; }
+#card-patches .pbox, #card-patches .tbox { border:1px solid var(--line); border-radius:9px; padding:8px 11px; font-size:12px; line-height:1.45; }
+#card-patches .pbox { background:#fff; color:#2c2f38; }
+#card-patches .tbox { background:#F7F8FB; color:#43474f; }
+#card-patches .pbox b, #card-patches .tbox b { font-weight:600; color:var(--ink); }
+#card-patches .src { margin-top:16px; font-family:var(--mono); font-size:11px; color:var(--muted); line-height:1.5; }
+#card-patches .src a { color:var(--truth); }
+#card-patches .difftable { width:100%; border-collapse:collapse; font-size:12px; margin-top:4px; }
+#card-patches .difftable th, #card-patches .difftable td { text-align:left; padding:7px 10px; border-bottom:1px solid var(--line); }
+#card-patches .difftable th { font-family:var(--mono); font-size:10px; letter-spacing:.04em; text-transform:uppercase; }
+#card-patches .difftable .label { color:var(--muted); font-family:var(--mono); font-size:11px; }
+#card-patches .difftable .toyh { color:#E2563F; }
+#card-patches .difftable .paperh { color:#3D3AE0; }
+#card-patches .difftable .toy { color:#b23a26; font-weight:600; }
+#card-patches .difftable .paper { color:#2c2f38; }
+#card-patches .difftable tr:last-child td { border-bottom:0; }
+@media (prefers-reduced-motion: reduce) {
+#card-patches * { transition:none!important; }
+}
+
+/* ===== card-token ===== */
+#card-token { --ink:#15171E; --muted:#5A6172; --line:#E2E5EC; --soft:#F5F6F9;
+    --truth:#3D3AE0; --heart:#E2563F; --green:#1F8A4C; --red:#C0432F;
+    --mono:'Space Mono',ui-monospace,monospace;
+    width:100%;  background:#fff; border:1px solid var(--line);
+    border-radius:16px; padding:28px 30px 26px; box-shadow:0 22px 55px -36px rgba(21,23,30,.32);
+    position:relative; max-width:none; width:100%; }
+#card-token * { box-sizing:border-box; }
+#card-token .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+#card-token h2 { font-size:22px; font-weight:600; letter-spacing:-.015em; margin:0 0 8px; padding-right:160px; }
+#card-token .intro { color:#2c2f38; font-size:15px; line-height:1.6; margin:0 0 20px; max-width:64ch; }
+#card-token .intro b { font-weight:600; }
+#card-token .cap { font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+#card-token svg { display:block; width:100%; height:auto; }
+#card-token .flipbtn { position:absolute; top:20px; right:22px; z-index:6; font-family:var(--mono); font-size:11px; font-weight:700;
+            border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:8px; padding:7px 12px; cursor:pointer;
+            display:inline-flex; align-items:center; gap:7px; }
+#card-token .flipbtn:hover { border-color:#cbd0da; background:#F5F6F9; }
+#card-token .flipbtn .ico { font-size:14px; }
+#card-token .flipwrap { perspective:2000px; }
+#card-token .inner { position:relative; transform-style:preserve-3d; transition:transform .65s cubic-bezier(.2,.7,.2,1); }
+#card-token .inner.flipped { transform:rotateY(180deg); }
+#card-token .face { -webkit-backface-visibility:hidden; backface-visibility:hidden; }
+#card-token .back { position:absolute; inset:0; transform:rotateY(180deg); overflow:hidden; }
+#card-token .stage { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+#card-token .pane-l { flex:0 0 158px; }
+#card-token .pane-r { flex:1 1 360px; min-width:330px; }
+#card-token .move { margin-bottom:20px; }
+#card-token .movelab { display:inline-block; font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.04em;
+            color:#fff; background:var(--ink); padding:3px 9px; border-radius:6px; margin-bottom:11px; }
+#card-token .sub { font-size:13px; color:var(--muted); margin:6px 0 0; line-height:1.5; }
+#card-token .avgrow { font-family:var(--mono); font-size:13px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:9px; }
+#card-token .chl { font-weight:700; width:78px; }
+#card-token .add { display:inline-flex; align-items:center; gap:2px; }
+#card-token .pn { font-size:10px; color:var(--muted); }
+#card-token .add b { font-weight:700; color:var(--ink); }
+#card-token .calcbtn { font-family:var(--mono); font-size:11px; font-weight:700; border:1px solid var(--line); background:#fff;
+            color:var(--truth); border-radius:6px; padding:3px 10px; cursor:pointer; }
+#card-token .calcbtn:hover { background:#F5F6F9; }
+#card-token .res { font-weight:700; }
+#card-token .res .avgv { background:#EEF0FB; color:var(--truth); padding:1px 7px; border-radius:5px; }
+#card-token .showall { font-family:var(--mono); font-size:11px; color:var(--muted); cursor:pointer; text-decoration:underline; margin-left:4px; }
+#card-token .det { margin-top:14px; padding:13px 15px; border-radius:10px; }
+#card-token .det.locked { background:var(--soft); border:1px dashed var(--line); color:var(--muted); font-style:italic; font-size:13px; }
+#card-token .det.open { background:#fff; border:1px solid var(--line); }
+#card-token .erow { font-family:var(--mono); font-size:13.5px; line-height:1.95; }
+#card-token .erow .ename { font-weight:700; }
+#card-token .erow .out { font-weight:700; padding:1px 7px; border-radius:5px; }
+#card-token .token { margin-top:8px; font-family:var(--mono); font-size:16px; font-weight:700; }
+#card-token .token .tv { color:var(--truth); }
+#card-token .note { font-size:12.5px; color:var(--muted); font-style:italic; margin-top:10px; line-height:1.5; }
+#card-token .tokenwrap { margin-top:8px; border-top:1px solid var(--line); padding-top:18px; }
+#card-token .tcap { font-size:13.5px; line-height:1.55; color:#2c2f38; margin:10px 0 0; max-width:66ch; }
+#card-token .tcap b { font-weight:600; }
+#card-token .foot { margin-top:20px; border-top:1px solid var(--line); padding-top:16px; font-size:14px; line-height:1.6; color:#2c2f38; }
+#card-token .foot b { font-weight:600; }
+#card-token .anatcap { font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--muted); margin:18px 0 4px; }
+#card-token .anat-eq { font-family:var(--mono); font-size:15px; background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:13px 16px; margin:10px 0 16px; line-height:1.8; text-align:center; }
+#card-token .anat-eq .z { color:#3D3AE0; font-weight:700; }
+#card-token .anat-eq .cls { color:#5A6172; font-weight:700; }
+#card-token .anat-eq .xe { color:#E2563F; font-weight:700; }
+#card-token .anat-eq .posc { color:#1F9E8F; font-weight:700; }
+#card-token .anat-eq .mut { color:#9aa0ad; }
+#card-token .anat-grid { display:grid; grid-template-columns:50px 0.85fr 1fr 1.25fr 0.95fr; gap:8px; align-items:stretch; }
+#card-token .rowlab { font-family:var(--mono); font-size:9.5px; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; line-height:1.25; }
+#card-token .symh { text-align:center; font-family:var(--mono); font-weight:700; font-size:13px; padding:5px 0; border-radius:7px; }
+#card-token .pbox, #card-token .tbox { border:1px solid var(--line); border-radius:9px; padding:9px 11px; font-size:12px; line-height:1.46; }
+#card-token .pbox { background:#fff; color:#2c2f38; }
+#card-token .tbox { background:#F7F8FB; color:#43474f; }
+#card-token .pbox b, #card-token .tbox b { font-weight:600; color:var(--ink); }
+#card-token .difftable { width:100%; border-collapse:collapse; font-size:13.5px; margin:8px 0 4px; }
+#card-token .difftable th, #card-token .difftable td { text-align:left; padding:8px 11px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.4; }
+#card-token .difftable th { font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+#card-token .difftable th.toyh { color:var(--heart); }
+#card-token .difftable th.paperh { color:var(--truth); }
+#card-token .difftable .label { font-weight:600; width:26%; color:#2c2f38; }
+#card-token .difftable td.toy { color:#b23a26; font-weight:600; }
+#card-token .difftable td.paper { color:#43474f; }
+#card-token .callout { margin-top:15px; background:#FBECE9; border:1px solid #f3d3cc; border-radius:10px; padding:12px 14px; font-size:13.5px; line-height:1.55; color:#2c2f38; }
+#card-token .callout b { color:var(--heart); font-weight:600; }
+#card-token .src { margin-top:15px; font-family:var(--mono); font-size:11px; color:var(--muted); line-height:1.5; }
+#card-token .src a { color:var(--truth); }
+#card-token .mini2 { display:grid; grid-template-columns:repeat(2,12px); grid-template-rows:repeat(2,12px); gap:1px; border:1px solid #fff; }
+#card-token .chip31 { font-family:var(--mono); font-size:13px; font-weight:700; color:var(--truth); background:#EEF0FB; border:1px solid #d9ddf6; border-radius:6px; padding:4px 9px; }
+#card-token .pillrow { display:flex; flex-direction:column; gap:3px; }
+#card-token .pill { font-size:10px; font-weight:600; border-radius:999px; padding:2px 9px; line-height:1.5; }
+#card-token .postag { font-family:var(--mono); font-size:10px; color:#9aa0ad; border:1px dashed #cfd3db; border-radius:6px; padding:4px 8px; }
+
+/* ===== card-position ===== */
+#card-position { --ink:#15171E; --muted:#5A6172; --line:#E2E5EC; --soft:#F5F6F9;
+        --truth:#3D3AE0; --heart:#E2563F; --teal:#1F9E8F;
+        --mono:'Space Mono',ui-monospace,monospace;
+        width:100%;  background:#fff; border:1px solid var(--line);
+        border-radius:16px; padding:28px 30px 26px; box-shadow:0 22px 55px -36px rgba(21,23,30,.32); position:relative; max-width:none; width:100%; }
+#card-position * { box-sizing:border-box; }
+#card-position .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+#card-position h2 { font-size:22px; font-weight:600; letter-spacing:-.015em; margin:0 0 8px; padding-right:160px; }
+#card-position .intro { color:#2c2f38; font-size:15px; line-height:1.6; margin:0 0 18px; max-width:66ch; }
+#card-position .intro b { font-weight:600; }
+#card-position .intro .zt { font-family:var(--mono); font-weight:700; color:var(--truth); }
+#card-position .intro.sentences > span { display:block; margin-bottom:8px; }
+#card-position .intro.sentences > span:last-child { margin-bottom:0; }
+#card-position .cap { font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+#card-position .posnote { font-size:13.5px; line-height:1.6; color:#5A6172; margin:0 0 12px; }
+#card-position .posnote b { font-weight:600; color:#2c2f38; }
+#card-position svg { display:block; width:100%; height:auto; }
+#card-position .flipbtn { position:absolute; top:20px; right:22px; z-index:6; font-family:var(--mono); font-size:11px; font-weight:700;
+            border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:8px; padding:7px 12px; cursor:pointer;
+            display:inline-flex; align-items:center; gap:7px; }
+#card-position .flipbtn:hover { border-color:#cbd0da; background:#F5F6F9; }
+#card-position .flipwrap { perspective:2000px; }
+#card-position .inner { position:relative; transform-style:preserve-3d; transition:transform .65s cubic-bezier(.2,.7,.2,1); }
+#card-position .inner.flipped { transform:rotateY(180deg); }
+#card-position .face { -webkit-backface-visibility:hidden; backface-visibility:hidden; }
+#card-position .back { position:absolute; inset:0; transform:rotateY(180deg); overflow:hidden; }
+#card-position .controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+#card-position .seg { display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; }
+#card-position .seg button { font-family:inherit; font-size:13px; font-weight:600; border:0; background:#fff; color:var(--muted);
+               padding:8px 15px; cursor:pointer; border-right:1px solid var(--line); }
+#card-position .seg button:last-child { border-right:0; }
+#card-position .seg button.on { color:#fff; }
+#card-position .btn { font-family:inherit; font-weight:600; font-size:13px; border:1px solid var(--line); background:#fff;
+        border-radius:8px; padding:8px 14px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+#card-position .btn:hover { border-color:#cbd0da; background:#F5F6F9; }
+#card-position .stage { display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+#card-position .pane-l { flex:0 0 162px; }
+#card-position .pane-r { flex:1 1 340px; min-width:320px; }
+#card-position .pcap { font-size:13.5px; line-height:1.55; color:#2c2f38; margin:12px 0 0; }
+#card-position .pcap b { font-weight:600; }
+#card-position .pcap .hot { color:var(--heart); font-weight:600; }
+#card-position .imgnote { font-family:var(--mono); font-size:10px; color:var(--muted); margin-top:8px; text-align:center; }
+#card-position .poscode { margin-top:18px; border-top:1px solid var(--line); padding-top:14px; }
+#card-position .pcrow { display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; }
+#card-position .pcrow svg { flex:0 0 150px; }
+#card-position .pcalc { flex:1 1 240px; font-family:var(--mono); font-size:12.5px; line-height:1.95; }
+#card-position .pcalc .step { color:#2c2f38; }
+#card-position .pcalc .step b { color:var(--ink); }
+#card-position .pcalc .fin { background:#E6F5F2; color:#15805f; font-weight:700; padding:2px 7px; border-radius:5px; }
+#card-position .pcalc .off { color:var(--muted); font-style:italic; }
+#card-position .pcalc .z { color:var(--truth); font-weight:700; }
+#card-position .learnbox { background:#F0F8F6; border:1px solid #CDE8E2; border-radius:10px; padding:12px 15px; margin:6px 0 16px; font-size:13px; line-height:1.6; color:#2c2f38; }
+#card-position .learnbox p { margin:0; }
+#card-position .learnbox b { font-weight:600; color:var(--ink); }
+#card-position .lbcap { font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; text-transform:uppercase; color:#1F9E8F; margin:0 0 6px !important; font-weight:700; }
+#card-position .foot { margin-top:20px; border-top:1px solid var(--line); padding-top:16px; font-size:14px; line-height:1.6; color:#2c2f38; }
+#card-position .foot b { font-weight:600; }
+#card-position .anatcap { font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--muted); margin:16px 0 8px; }
+#card-position .formula { font-family:var(--mono); font-size:13.5px; background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:13px 16px; margin:8px 0 16px; line-height:1.9; }
+#card-position .formula .mut { color:var(--muted); font-size:12px; }
+#card-position .anat-grid { display:grid; grid-template-columns:46px 1fr 1fr; gap:8px; align-items:stretch; }
+#card-position .rowlab { font-family:var(--mono); font-size:9.5px; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; line-height:1.25; }
+#card-position .symh { text-align:center; font-family:var(--mono); font-weight:700; font-size:12px; padding:6px 4px; border-radius:7px; line-height:1.2; }
+#card-position .pbox, #card-position .tbox { border:1px solid var(--line); border-radius:9px; padding:9px 11px; font-size:12px; line-height:1.46; }
+#card-position .pbox { background:#fff; color:#2c2f38; }
+#card-position .tbox { background:#F7F8FB; color:#43474f; }
+#card-position .pbox b, #card-position .tbox b { font-weight:600; color:var(--ink); }
+#card-position .src { margin-top:16px; font-family:var(--mono); font-size:11px; color:var(--muted); line-height:1.5; }
+#card-position .src a { color:var(--truth); }
+
+/* ===== card-attn-setup ===== */
+#card-attn-setup { --ink:#15171E; --muted:#5A6172; --line:#E2E5EC; --soft:#F5F6F9;
+        --truth:#3D3AE0; --heart:#E2563F; --teal:#1F9E8F;
+        --mono:'Space Mono',ui-monospace,monospace;
+        width:100%;  background:#fff; border:1px solid var(--line);
+        border-radius:16px; padding:28px 30px 26px; box-shadow:0 22px 55px -36px rgba(21,23,30,.32); position:relative; max-width:none; width:100%; }
+#card-attn-setup * { box-sizing:border-box; }
+#card-attn-setup .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+#card-attn-setup h2 { font-size:22px; font-weight:600; letter-spacing:-.015em; margin:0 0 8px; padding-right:160px; }
+#card-attn-setup .intro { color:#2c2f38; font-size:15px; line-height:1.6; margin:0 0 16px; max-width:68ch; }
+#card-attn-setup .intro b { font-weight:600; }
+#card-attn-setup .intro i { font-family:'Newsreader',serif; font-style:italic; }
+#card-attn-setup .cap { font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+#card-attn-setup svg { display:block; width:100%; height:auto; }
+#card-attn-setup .flipbtn { position:absolute; top:20px; right:22px; z-index:6; font-family:var(--mono); font-size:11px; font-weight:700;
+            border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:8px; padding:7px 12px; cursor:pointer;
+            display:inline-flex; align-items:center; gap:7px; }
+#card-attn-setup .flipbtn:hover { border-color:#cbd0da; background:#F5F6F9; }
+#card-attn-setup .flipwrap { perspective:2000px; }
+#card-attn-setup .inner { position:relative; transform-style:preserve-3d; transition:transform .65s cubic-bezier(.2,.7,.2,1); }
+#card-attn-setup .inner.flipped { transform:rotateY(180deg); }
+#card-attn-setup .face { -webkit-backface-visibility:hidden; backface-visibility:hidden; }
+#card-attn-setup .back { position:absolute; inset:0; transform:rotateY(180deg); overflow:hidden; }
+#card-attn-setup .steps { display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; margin-bottom:16px; }
+#card-attn-setup .steps button { font-family:inherit; font-size:13px; font-weight:600; border:0; background:#fff; color:var(--muted);
+                 padding:8px 16px; cursor:pointer; border-right:1px solid var(--line); }
+#card-attn-setup .steps button:last-child { border-right:0; }
+#card-attn-setup .steps button.on { color:#fff; background:#15171E; }
+#card-attn-setup .stage { display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+#card-attn-setup .pane-l { flex:0 0 150px; }
+#card-attn-setup .pane-r { flex:1 1 380px; min-width:340px; }
+#card-attn-setup .imgnote { font-family:var(--mono); font-size:10px; color:var(--muted); margin-top:8px; text-align:center; }
+#card-attn-setup .defbox { margin-top:14px; border:1px solid var(--line); border-radius:11px; padding:13px 15px; background:#fff; min-height:74px; }
+#card-attn-setup .defbox .term { font-family:var(--mono); font-weight:700; font-size:13px; }
+#card-attn-setup .defbox .term.q { color:var(--truth); }
+#card-attn-setup .defbox .term.k { color:var(--teal); }
+#card-attn-setup .defbox .term.v { color:var(--heart); }
+#card-attn-setup .defbox p { margin:6px 0 0; font-size:14px; line-height:1.55; color:#2c2f38; }
+#card-attn-setup .defbox .ask { font-family:'Newsreader',serif; font-style:italic; color:var(--ink); }
+#card-attn-setup .pipe { margin-top:18px; border-top:1px solid var(--line); padding-top:16px; }
+#card-attn-setup .pipe-row { display:flex; gap:10px; align-items:stretch; flex-wrap:wrap; font-family:var(--mono); font-size:12px; }
+#card-attn-setup .pchip { flex:1 1 150px; border:1px solid var(--line); border-radius:9px; padding:9px 11px; line-height:1.5; background:var(--soft); }
+#card-attn-setup .pchip .h { font-weight:700; font-size:11px; letter-spacing:.03em; text-transform:uppercase; margin-bottom:3px; }
+#card-attn-setup .pchip.s .h { color:var(--truth); }
+#card-attn-setup .pchip.w .h { color:var(--ink); }
+#card-attn-setup .pchip.b .h { color:var(--heart); }
+#card-attn-setup .pchip .mut { color:var(--muted); }
+#card-attn-setup .arrow { align-self:center; color:var(--muted); font-weight:700; }
+#card-attn-setup .foot { margin-top:20px; border-top:1px solid var(--line); padding-top:16px; font-size:14px; line-height:1.6; color:#2c2f38; }
+#card-attn-setup .foot b { font-weight:600; }
+#card-attn-setup .formula { font-family:var(--mono); font-size:13px; background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:13px 16px; margin:10px 0 16px; line-height:2; }
+#card-attn-setup .formula .mut { color:var(--muted); font-size:11.5px; }
+#card-attn-setup .anatcap { font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--muted); margin:16px 0 8px; }
+#card-attn-setup .three { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+#card-attn-setup .tcard { border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.5; }
+#card-attn-setup .tcard .h { font-family:var(--mono); font-weight:700; font-size:12px; margin-bottom:4px; }
+#card-attn-setup .tcard.q .h { color:var(--truth); }
+#card-attn-setup .tcard.k .h { color:var(--teal); }
+#card-attn-setup .tcard.v .h { color:var(--heart); }
+#card-attn-setup .tcard b { font-weight:600; color:var(--ink); }
+#card-attn-setup .src { margin-top:16px; font-family:var(--mono); font-size:11px; color:var(--muted); line-height:1.5; }
+#card-attn-setup .src a { color:var(--truth); }
+
+/* ===== card-attn-match ===== */
+#card-attn-match { --ink:#15171E; --muted:#5A6172; --line:#E2E5EC; --soft:#F5F6F9;
+        --truth:#3D3AE0; --heart:#E2563F; --teal:#1F9E8F;
+        --mono:'Space Mono',ui-monospace,monospace;
+        width:100%;  background:#fff; border:1px solid var(--line);
+        border-radius:16px; padding:28px 30px 26px; box-shadow:0 22px 55px -36px rgba(21,23,30,.32); position:relative; max-width:none; width:100%; }
+#card-attn-match * { box-sizing:border-box; }
+#card-attn-match .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+#card-attn-match h2 { font-size:22px; font-weight:600; letter-spacing:-.015em; margin:0 0 8px; }
+#card-attn-match .intro { color:#2c2f38; font-size:15px; line-height:1.6; margin:0 0 16px; max-width:68ch; }
+#card-attn-match .intro b { font-weight:600; }
+#card-attn-match .intro i { font-family:'Newsreader',serif; font-style:italic; }
+#card-attn-match .cap { font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+#card-attn-match svg { display:block; width:100%; height:auto; }
+#card-attn-match .controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+#card-attn-match .btn { font-family:inherit; font-weight:600; font-size:13px; border:1px solid var(--line); background:#fff;
+        border-radius:8px; padding:8px 14px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+#card-attn-match .btn:hover { border-color:#cbd0da; background:#F5F6F9; }
+#card-attn-match .btn.primary { background:#1F9E8F; color:#fff; border-color:#1F9E8F; }
+#card-attn-match .btn.primary:hover { background:#1b8d80; }
+#card-attn-match .stage { display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+#card-attn-match .pane-l { flex:0 0 150px; }
+#card-attn-match .pane-r { flex:1 1 380px; min-width:340px; }
+#card-attn-match .pcap { font-size:13.5px; line-height:1.55; color:#2c2f38; margin:12px 0 0; }
+#card-attn-match .pcap b { font-weight:600; }
+#card-attn-match .pcap .g { color:var(--teal); font-weight:600; }
+#card-attn-match .pcap .hot { color:var(--heart); font-weight:600; }
+#card-attn-match .imgnote { font-family:var(--mono); font-size:10px; color:var(--muted); margin-top:8px; text-align:center; }
+#card-attn-match .calcrow { margin-top:18px; border-top:1px solid var(--line); padding-top:16px; display:flex; gap:22px; flex-wrap:wrap; }
+#card-attn-match .diy { flex:1 1 300px; min-width:290px; }
+#card-attn-match .bars { flex:1 1 250px; min-width:240px; }
+#card-attn-match .diybox { border:1px solid var(--line); border-radius:11px; padding:14px 16px; font-family:var(--mono); font-size:13px; }
+#card-attn-match .diybox .hd { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px; }
+#card-attn-match .diybox .qv { color:var(--truth); font-weight:700; }
+#card-attn-match .diybox .kv { color:var(--ink); font-weight:700; }
+#card-attn-match .diybox .sw { display:inline-block; width:11px;height:11px;border-radius:3px;border:1px solid rgba(21,23,30,.2); vertical-align:-1px; margin-right:4px; }
+#card-attn-match .calc { display:grid; grid-template-columns:1fr auto; gap:7px 12px; align-items:center; }
+#card-attn-match .calc .lab { color:#2c2f38; }
+#card-attn-match .calc .lab b { color:var(--ink); }
+#card-attn-match .rv { font-family:var(--mono); font-weight:700; font-size:12px; border:1px solid var(--line); background:#fff;
+       border-radius:7px; padding:5px 12px; cursor:pointer; color:var(--truth); min-width:78px; text-align:center; }
+#card-attn-match .rv:hover { background:#F5F6F9; border-color:#cbd0da; }
+#card-attn-match .rv.done { background:#ECEBFB; border-color:#ECEBFB; color:var(--truth); cursor:default; }
+#card-attn-match .rv:disabled { color:#b6bbc6; cursor:not-allowed; }
+#card-attn-match .calc .div { grid-column:1 / -1; border-top:1px dashed var(--line); margin:3px 0; }
+#card-attn-match .scoreout { grid-column:1 / -1; margin-top:6px; font-size:12px; color:var(--muted); }
+#card-attn-match .scoreout .s { background:#E6F5F2; color:#15805f; font-weight:700; padding:1px 7px; border-radius:5px; }
+#card-attn-match .geo { margin-top:10px; font-size:11.5px; color:var(--muted); line-height:1.5; font-family:var(--mono); }
+#card-attn-match .brow { display:flex; align-items:center; gap:8px; margin:4px 0; cursor:pointer; font-family:var(--mono); font-size:11px; }
+#card-attn-match .brow .sw { width:13px;height:13px;border-radius:3px;border:1px solid rgba(21,23,30,.18); flex:0 0 auto; }
+#card-attn-match .brow .sl { width:54px; color:var(--muted); }
+#card-attn-match .brow .track { flex:1; height:15px; background:#F0F1F5; border-radius:4px; overflow:hidden; }
+#card-attn-match .brow .fill { height:100%; background:#1F9E8F; border-radius:4px; transition:width .25s; }
+#card-attn-match .brow .pct { width:40px; text-align:right; color:var(--ink); }
+#card-attn-match .brow.sel .track { outline:2px solid var(--heart); outline-offset:1px; }
+#card-attn-match .brow.selfrow .sl { color:var(--heart); }
+#card-attn-match .foot { margin-top:20px; border-top:1px solid var(--line); padding-top:16px; font-size:14px; line-height:1.6; color:#2c2f38; }
+#card-attn-match .foot b { font-weight:600; }
+#card-attn-match .foot i { font-family:'Newsreader',serif; font-style:italic; }
+
+/* ===== card-attn-bind ===== */
+#card-attn-bind { --ink:#15171E; --muted:#5A6172; --line:#E2E5EC; --soft:#F5F6F9;
+        --truth:#3D3AE0; --heart:#E2563F; --teal:#1F9E8F;
+        --mono:'Space Mono',ui-monospace,monospace;
+        width:100%;  background:#fff; border:1px solid var(--line);
+        border-radius:16px; padding:28px 30px 26px; box-shadow:0 22px 55px -36px rgba(21,23,30,.32); position:relative; max-width:none; width:100%; }
+#card-attn-bind * { box-sizing:border-box; }
+#card-attn-bind .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+#card-attn-bind h2 { font-size:22px; font-weight:600; letter-spacing:-.015em; margin:0 0 8px; }
+#card-attn-bind .intro { color:#2c2f38; font-size:15px; line-height:1.6; margin:0 0 16px; max-width:68ch; }
+#card-attn-bind .intro b { font-weight:600; }
+#card-attn-bind .intro i { font-family:'Newsreader',serif; font-style:italic; }
+#card-attn-bind .cap { font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+#card-attn-bind svg { display:block; width:100%; height:auto; }
+#card-attn-bind .rotrow { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:16px; background:var(--soft); border:1px solid var(--line); border-radius:11px; padding:12px 15px; }
+#card-attn-bind .rotrow .lbl { font-family:var(--mono); font-size:12px; color:var(--ink); font-weight:700; }
+#card-attn-bind .rotrow input[type=range] { flex:1 1 200px; accent-color:#3D3AE0; height:4px; }
+#card-attn-bind .rotrow .val { font-family:var(--mono); font-size:14px; font-weight:700; color:var(--truth); width:48px; text-align:right; }
+#card-attn-bind .snap { font-family:var(--mono); font-size:11px; font-weight:700; border:1px solid var(--line); background:#fff; border-radius:7px; padding:5px 10px; cursor:pointer; color:#5A6172; }
+#card-attn-bind .snap:hover { border-color:#cbd0da; }
+#card-attn-bind .snap.on { background:#15171E; color:#fff; border-color:#15171E; }
+#card-attn-bind .controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+#card-attn-bind .btn { font-family:inherit; font-weight:600; font-size:13px; border:1px solid var(--line); background:#fff;
+        border-radius:8px; padding:8px 14px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+#card-attn-bind .btn:hover { border-color:#cbd0da; background:#F5F6F9; }
+#card-attn-bind .btn.primary { background:#1F9E8F; color:#fff; border-color:#1F9E8F; }
+#card-attn-bind .btn.primary:hover { background:#1b8d80; }
+#card-attn-bind .stage { display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+#card-attn-bind .pane-l { flex:0 0 150px; }
+#card-attn-bind .pane-r { flex:1 1 380px; min-width:340px; }
+#card-attn-bind .pcap { font-size:13.5px; line-height:1.55; color:#2c2f38; margin:12px 0 0; }
+#card-attn-bind .pcap b { font-weight:600; }
+#card-attn-bind .pcap .g { color:var(--teal); font-weight:600; }
+#card-attn-bind .pcap .hot { color:var(--heart); font-weight:600; }
+#card-attn-bind .imgnote { font-family:var(--mono); font-size:10px; color:var(--muted); margin-top:8px; text-align:center; }
+#card-attn-bind .geowrap { margin-top:18px; border-top:1px solid var(--line); padding-top:16px; display:flex; gap:22px; flex-wrap:wrap; }
+#card-attn-bind .geo { flex:1 1 250px; min-width:240px; font-family:var(--mono); font-size:12.5px; line-height:1.9; }
+#card-attn-bind .geo .q { color:var(--truth); font-weight:700; }
+#card-attn-bind .geo .hot { color:var(--heart); font-weight:700; }
+#card-attn-bind .geo .g { color:var(--teal); font-weight:700; }
+#card-attn-bind .geo .big { background:#FBECE9; color:#b23a26; font-weight:700; padding:1px 6px; border-radius:5px; }
+#card-attn-bind .geo .zero { background:#EFEFF2; color:#5A6172; font-weight:700; padding:1px 6px; border-radius:5px; }
+#card-attn-bind .bars { flex:1 1 240px; min-width:230px; }
+#card-attn-bind .brow { display:flex; align-items:center; gap:8px; margin:4px 0; font-family:var(--mono); font-size:11px; }
+#card-attn-bind .brow .sw { width:13px;height:13px;border-radius:3px;border:1px solid rgba(21,23,30,.18); flex:0 0 auto; }
+#card-attn-bind .brow .sl { width:54px; color:var(--muted); }
+#card-attn-bind .brow .track { flex:1; height:15px; background:#F0F1F5; border-radius:4px; overflow:hidden; }
+#card-attn-bind .brow .fill { height:100%; background:#1F9E8F; border-radius:4px; transition:width .12s; }
+#card-attn-bind .brow .pct { width:40px; text-align:right; color:var(--ink); }
+#card-attn-bind .brow.selfrow .sl { color:var(--heart); }
+#card-attn-bind .frombox { margin-top:18px; background:#EEF6F4; border:1px solid #CDE8E2; border-radius:11px; padding:13px 16px; font-size:13.5px; line-height:1.6; color:#2c2f38; }
+#card-attn-bind .frombox .h { font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; text-transform:uppercase; color:var(--teal); font-weight:700; margin-bottom:6px; }
+#card-attn-bind .frombox b { font-weight:600; color:var(--ink); }
+#card-attn-bind .frombox code { font-family:var(--mono); background:#fff; border:1px solid #d8ece7; border-radius:4px; padding:1px 5px; }
+#card-attn-bind .foot { margin-top:20px; border-top:1px solid var(--line); padding-top:16px; font-size:14px; line-height:1.6; color:#2c2f38; }
+#card-attn-bind .foot b { font-weight:600; }
+#card-attn-bind .foot i { font-family:'Newsreader',serif; font-style:italic; }
+
+/* ===== card-attn-combined ===== */
+#card-attn-combined { --ink:#15171E; --muted:#5A6172; --line:#E2E5EC; --soft:#F5F6F9;
+        --truth:#3D3AE0; --heart:#E2563F; --teal:#1F9E8F;
+        --mono:'Space Mono',ui-monospace,monospace;
+        width:100%;  background:#fff; border:1px solid var(--line);
+        border-radius:16px; padding:28px 30px 26px; box-shadow:0 22px 55px -36px rgba(21,23,30,.32); position:relative; max-width:none; width:100%; }
+#card-attn-combined * { box-sizing:border-box; }
+#card-attn-combined .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+#card-attn-combined h2 { font-size:22px; font-weight:600; letter-spacing:-.015em; margin:0 0 8px; padding-right:160px; }
+#card-attn-combined .intro { color:#2c2f38; font-size:15px; line-height:1.6; margin:0 0 16px; max-width:68ch; }
+#card-attn-combined .intro b { font-weight:600; }
+#card-attn-combined .intro i { font-family:'Newsreader',serif; font-style:italic; }
+#card-attn-combined .cap { font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+#card-attn-combined svg { display:block; width:100%; height:auto; }
+#card-attn-combined .flipbtn { position:absolute; top:20px; right:22px; z-index:6; font-family:var(--mono); font-size:11px; font-weight:700;
+            border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:8px; padding:7px 12px; cursor:pointer;
+            display:inline-flex; align-items:center; gap:7px; }
+#card-attn-combined .flipbtn:hover { border-color:#cbd0da; background:#F5F6F9; }
+#card-attn-combined .flipwrap { perspective:2000px; }
+#card-attn-combined .inner { position:relative; transform-style:preserve-3d; transition:transform .65s cubic-bezier(.2,.7,.2,1); }
+#card-attn-combined .inner.flipped { transform:rotateY(180deg); }
+#card-attn-combined .face { -webkit-backface-visibility:hidden; backface-visibility:hidden; }
+#card-attn-combined .back { position:absolute; inset:0; transform:rotateY(180deg); overflow:hidden; }
+#card-attn-combined .seg { display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; margin-bottom:16px; }
+#card-attn-combined .seg button { font-family:inherit; font-size:13px; font-weight:600; border:0; background:#fff; color:var(--muted);
+               padding:8px 16px; cursor:pointer; border-right:1px solid var(--line); }
+#card-attn-combined .seg button:last-child { border-right:0; }
+#card-attn-combined .seg button.on { color:#fff; background:#15171E; }
+#card-attn-combined .controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+#card-attn-combined .btn { font-family:inherit; font-weight:600; font-size:13px; border:1px solid var(--line); background:#fff;
+        border-radius:8px; padding:8px 14px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+#card-attn-combined .btn:hover { border-color:#cbd0da; background:#F5F6F9; }
+#card-attn-combined .btn.primary { background:#1F9E8F; color:#fff; border-color:#1F9E8F; }
+#card-attn-combined .btn.primary:hover { background:#1b8d80; }
+#card-attn-combined .stage { display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+#card-attn-combined .pane-l { flex:0 0 150px; }
+#card-attn-combined .pane-r { flex:1 1 380px; min-width:340px; }
+#card-attn-combined .pcap { font-size:13.5px; line-height:1.55; color:#2c2f38; margin:12px 0 0; }
+#card-attn-combined .pcap b { font-weight:600; }
+#card-attn-combined .pcap .g { color:var(--teal); font-weight:600; }
+#card-attn-combined .pcap .i { color:var(--truth); font-weight:600; }
+#card-attn-combined .pcap .hot { color:var(--heart); font-weight:600; }
+#card-attn-combined .imgnote { font-family:var(--mono); font-size:10px; color:var(--muted); margin-top:8px; text-align:center; }
+#card-attn-combined .heads { margin-top:18px; border-top:1px solid var(--line); padding-top:14px; font-family:var(--mono); font-size:12.5px; }
+#card-attn-combined .hline { display:flex; align-items:baseline; gap:10px; margin:5px 0; flex-wrap:wrap; }
+#card-attn-combined .htag { font-weight:700; padding:1px 8px; border-radius:5px; font-size:11px; }
+#card-attn-combined .htag.m { background:#E6F5F2; color:#15805f; }
+#card-attn-combined .htag.b { background:#ECEBFB; color:#3D3AE0; }
+#card-attn-combined .htag.c { background:#FBECE9; color:#b23a26; }
+#card-attn-combined .hline .desc { color:#5A6172; }
+#card-attn-combined .hline .out { color:var(--ink); font-weight:700; }
+#card-attn-combined .hsum { margin-top:8px; font-size:13px; color:#2c2f38; font-family:'Space Grotesk',sans-serif; }
+#card-attn-combined .hsum b { font-weight:600; }
+#card-attn-combined .foot { margin-top:20px; border-top:1px solid var(--line); padding-top:16px; font-size:14px; line-height:1.6; color:#2c2f38; }
+#card-attn-combined .foot b { font-weight:600; }
+#card-attn-combined .foot i { font-family:'Newsreader',serif; font-style:italic; }
+#card-attn-combined .anatcap { font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--muted); margin:16px 0 8px; }
+#card-attn-combined .formula { font-family:var(--mono); font-size:13px; background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:13px 16px; margin:8px 0 16px; line-height:2; }
+#card-attn-combined .formula .mut { color:var(--muted); font-size:11.5px; }
+#card-attn-combined .anat-grid { display:grid; grid-template-columns:58px 1fr 1fr; gap:8px; align-items:stretch; }
+#card-attn-combined .rowlab { font-family:var(--mono); font-size:9.5px; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; line-height:1.25; }
+#card-attn-combined .symh { text-align:center; font-family:var(--mono); font-weight:700; font-size:12px; padding:6px 4px; border-radius:7px; line-height:1.2; }
+#card-attn-combined .pbox, #card-attn-combined .tbox { border:1px solid var(--line); border-radius:9px; padding:8px 11px; font-size:12px; line-height:1.45; }
+#card-attn-combined .pbox { background:#fff; color:#2c2f38; }
+#card-attn-combined .tbox { background:#F7F8FB; color:#43474f; }
+#card-attn-combined .pbox b, #card-attn-combined .tbox b { font-weight:600; color:var(--ink); }
+#card-attn-combined .src { margin-top:16px; font-family:var(--mono); font-size:11px; color:var(--muted); line-height:1.5; }
+#card-attn-combined .src a { color:var(--truth); }
+
+/* ===== card-classify ===== */
+#card-classify { --ink:#15171E; --muted:#5A6172; --line:#E2E5EC; --soft:#F5F6F9;
+        --truth:#3D3AE0; --heart:#E2563F; --teal:#1F9E8F;
+        --mono:'Space Mono',ui-monospace,monospace;
+        width:100%;  background:#fff; border:1px solid var(--line);
+        border-radius:16px; padding:28px 30px 26px; box-shadow:0 22px 55px -36px rgba(21,23,30,.32); position:relative; max-width:none; width:100%; }
+#card-classify * { box-sizing:border-box; }
+#card-classify .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+#card-classify h2 { font-size:22px; font-weight:600; letter-spacing:-.015em; margin:0 0 8px; padding-right:160px; }
+#card-classify .intro { color:#2c2f38; font-size:15px; line-height:1.6; margin:0 0 16px; }
+#card-classify .intro b { font-weight:600; }
+#card-classify .intro i { font-family:'Newsreader',serif; font-style:italic; }
+#card-classify .intro.sentences > span { display:block; margin-bottom:8px; }
+#card-classify .intro.sentences > span:last-child { margin-bottom:0; }
+#card-classify .cap { font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+#card-classify svg { display:block; width:100%; height:auto; }
+#card-classify .flipbtn { position:absolute; top:20px; right:22px; z-index:6; font-family:var(--mono); font-size:11px; font-weight:700;
+            border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:8px; padding:7px 12px; cursor:pointer;
+            display:inline-flex; align-items:center; gap:7px; }
+#card-classify .flipbtn:hover { border-color:#cbd0da; background:#F5F6F9; }
+#card-classify .flipwrap { perspective:2000px; }
+#card-classify .inner { position:relative; transform-style:preserve-3d; transition:transform .65s cubic-bezier(.2,.7,.2,1); }
+#card-classify .inner.flipped { transform:rotateY(180deg); }
+#card-classify .face { -webkit-backface-visibility:hidden; backface-visibility:hidden; }
+#card-classify .back { position:absolute; inset:0; transform:rotateY(180deg); overflow:hidden; }
+#card-classify .seg { display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; margin-bottom:18px; }
+#card-classify .seg button { font-family:inherit; font-size:13px; font-weight:600; border:0; background:#fff; color:var(--muted);
+               padding:8px 16px; cursor:pointer; border-right:1px solid var(--line); }
+#card-classify .seg button:last-child { border-right:0; }
+#card-classify .seg button.on { color:#fff; background:#15171E; }
+#card-classify .stage { display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+#card-classify .pane-l { flex:0 0 200px; }
+#card-classify .pane-r { flex:1 1 380px; min-width:340px; }
+#card-classify .pcap { font-size:13.5px; line-height:1.55; color:#2c2f38; margin:12px 0 0; }
+#card-classify .pcap b { font-weight:600; }
+#card-classify .pcap .g { color:var(--teal); font-weight:600; }
+#card-classify .pcap .hot { color:var(--heart); font-weight:600; }
+#card-classify .pooltable { width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12px; margin-top:4px; }
+#card-classify .pooltable th, #card-classify .pooltable td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
+#card-classify .pooltable th { font-size:10px; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
+#card-classify .pooltable tr:last-child td { border-bottom:0; }
+#card-classify .pooltable .swrow { display:flex; align-items:center; gap:6px; }
+#card-classify .pooltable .sw { width:11px;height:11px;border-radius:3px;border:1px solid rgba(21,23,30,.18); flex:0 0 auto; }
+#card-classify .scorerow { margin-top:18px; border-top:1px solid var(--line); padding-top:16px; display:flex; gap:22px; flex-wrap:wrap; }
+#card-classify .scorebox { flex:1 1 320px; min-width:300px; }
+#card-classify .gauge { flex:1 1 250px; min-width:240px; }
+#card-classify .calc { font-family:var(--mono); font-size:13px; line-height:2; }
+#card-classify .calc .term { font-weight:700; }
+#card-classify .calc .tg { color:#1F9E8F; }
+#card-classify .calc .tr { color:#E2563F; }
+#card-classify .calc .result { font-size:14px; }
+#card-classify .calc .pos { background:#E6F5F2; color:#15805f; font-weight:700; padding:1px 7px; border-radius:5px; }
+#card-classify .calc .neg { background:#FBECE9; color:#b23a26; font-weight:700; padding:1px 7px; border-radius:5px; }
+#card-classify .foot { margin-top:20px; border-top:1px solid var(--line); padding-top:16px; font-size:14px; line-height:1.6; color:#2c2f38; }
+#card-classify .foot b { font-weight:600; }
+#card-classify .foot i { font-family:'Newsreader',serif; font-style:italic; }
+#card-classify .anatcap { font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--muted); margin:16px 0 8px; }
+#card-classify .formula { font-family:var(--mono); font-size:13px; background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:13px 16px; margin:8px 0 16px; line-height:1.9; }
+#card-classify .formula .mut { color:var(--muted); font-size:11.5px; }
+#card-classify .anat-grid { display:grid; grid-template-columns:46px 1fr 1fr; gap:8px; align-items:stretch; }
+#card-classify .rowlab { font-family:var(--mono); font-size:9.5px; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; line-height:1.25; }
+#card-classify .symh { text-align:center; font-family:var(--mono); font-weight:700; font-size:12px; padding:6px 4px; border-radius:7px; line-height:1.2; }
+#card-classify .pbox, #card-classify .tbox { border:1px solid var(--line); border-radius:9px; padding:8px 11px; font-size:12px; line-height:1.45; }
+#card-classify .pbox { background:#fff; color:#2c2f38; }
+#card-classify .tbox { background:#F7F8FB; color:#43474f; }
+#card-classify .pbox b, #card-classify .tbox b { font-weight:600; color:var(--ink); }
+#card-classify .src { margin-top:16px; font-family:var(--mono); font-size:11px; color:var(--muted); line-height:1.5; }
+#card-classify .src a { color:var(--truth); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="post-kicker"><a href="https://makesnosense.io">makesnosense.io</a> &middot; an interactive build</div>
+  <h1 class="post-title">Learning Vision Transformers<span class="sub">(Without the Language-Transformer Proxy)</span></h1>
+  <div class="post-meta">Every figure is a toy you can poke &middot; flip a card to meet the paper</div>
+  <p class="post-lead">Almost every explanation of the Vision Transformer I&rsquo;ve come across reaches for the language transformer first, patches become &ldquo;tokens, like words,&rdquo; attention is &ldquo;the same idea as in BERT.&rdquo; That&rsquo;s a natural route, and probably how most of us first met the model: it&rsquo;s how the research actually moved, transformers winning at language well before vision. But it always felt to me a little like a proxy, explaining a model whose input is an <em>image</em> by way of one whose input is text. This is my attempt at the other path: building a Vision Transformer from the image upward: patches, numbers, tokens, position, attention, entirely by hand (with Claude&rsquo;s help), on one small picture of a tree, with as little borrowed from the language as was needed.</p>
+  <p class="post-note">How to read it: every stage below is a live widget. Poke it. Where the paper has something precise to say, the card flips over to show how the toy lines up with the real thing.</p>
+
+<section class="section">
+<div class="vit" id="card-overview">
+  <div class="eyebrow">The whole machine, on one screen</div>
+  <h2>How a Vision Transformer sees an image</h2>
+  <p class="sub">Our job is easy to say and surprisingly involved to do: look at this little block-built tree from Lego Land and decide it's a tree. Six stages get us there. Click any block, or press play, to see what each does; the rest of the post builds them by hand, small enough to check on paper.</p>
+
+  <div class="strip" id="strip"></div>
+  <div class="controls">
+    <button class="play" id="play"><span id="playIcon">▶</span> <span id="playTxt">Play the flow</span></button>
+    <span class="pos" id="pos"></span>
+  </div>
+
+  <div class="detail">
+    <div class="dleft">
+      <span class="dtag" id="dtag"></span>
+      <h3 id="dttl"></h3>
+      <p id="ddesc"></p>
+      <p class="micro" id="dmicro"></p>
+    </div>
+    <div class="dright" id="dvis"></div>
+  </div>
+</div>
+</section>
+
+<section class="section">
+<p class="connect">So that&rsquo;s the whole map. Now we walk it, starting exactly where the model starts, by refusing to look at the picture as a picture.</p>
+<div class="vit" id="card-patches">
+  <button class="flipbtn" id="flipbtn"><span class="ico">&#8634;</span><span class="lbl">Compare to the paper</span></button>
+  <div class="flipwrap"><div class="inner" id="inner">
+    <div class="face front" id="frontface">
+  <div class="eyebrow">Section · Patches</div>
+  <h2>The network never sees a tree. It sees numbers.</h2>
+  <p class="intro sentences">
+    <span>Here's the thing the colored picture hides: a computer has no notion of "green."</span>
+    <span>Every pixel is just <b>three numbers</b>: how much <b>red</b>, <b>green</b>, and <b>blue</b> light it carries, each from 0 to 255.</span>
+    <span>Stack those three layers, let your eye mix the light, and you get the color you see.</span>
+    <span>Cutting the image into patches is nothing more than <b>grouping these numbers into tiles.</b></span>
+    <span>Our toy is a <b>6&times;6 image</b>, 36 pixels, sliced into a 3&times;3 grid of nine <b>2&times;2 patches</b> (4 pixels each).</span>
+    <span>Flip the view and pick a patch to see the only thing the model ever gets.</span>
+  </p>
+
+  <div class="seg" id="seg">
+    <button data-v="color" class="on"><span class="dot" style="background:linear-gradient(90deg,#E2563F,#34A85B,#3D3AE0)"></span>Color (what you see)</button>
+    <button data-v="0"><span class="dot" style="background:#E2563F"></span>R</button>
+    <button data-v="1"><span class="dot" style="background:#34A85B"></span>G</button>
+    <button data-v="2"><span class="dot" style="background:#3D3AE0"></span>B</button>
+  </div>
+
+  <div class="seg2wrap" id="seg2wrap" style="display:none;">
+    <span class="lenslabel">In this channel</span>
+    <div class="seg" id="seg2">
+      <button data-m="see" class="on">What you see</button>
+      <button data-m="numbers">What the network sees</button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="pane" style="flex:0 0 226px;">
+      <p class="cap">The image · click a patch</p>
+      <svg id="main" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg"></svg>
+      <p class="viewlabel" id="vlabel"></p>
+    </div>
+    <div class="pane">
+      <p class="cap">The selected patch, as the network stores it</p>
+      <svg id="panel" viewBox="0 0 268 190" xmlns="http://www.w3.org/2000/svg"></svg>
+      <p class="pcap" id="pcap"></p>
+    </div>
+  </div>
+
+  <p class="foot"><b>So a patch isn't a little colored square. It's a small stack of numbers.</b> Next we squash each patch's numbers down into a single vector, its "token," so the rest of the machine has something compact to work with.</p>
+    </div>
+
+    <div class="face back" id="backface">
+      <div class="eyebrow">From the paper · patches</div>
+      <h2>Cutting the image into tokens</h2>
+      <p class="intro">To hand an image to a plain Transformer, ViT first slices it into a grid of <b>fixed-size, non-overlapping patches</b> and treats each one as a token. That single move, no convolutions, just a reshape, is what lets a text-style architecture read pixels at all. Patch size is a knob: <b>16&times;16</b> in ViT-Base, <b>2&times;2</b> in our toy (and in Cordonnier 2020, the closest precursor).</p>
+
+      <p class="anatcap">Anatomy of the reshape: each part, with its toy value aligned below</p>
+      <div class="anat-eq">
+        <span class="vx">x</span> <span class="mut">&isin; &#8477;</span><sup><span class="vH">H</span><span class="mut">&times;</span><span class="vW">W</span><span class="mut">&times;</span><span class="vC">C</span></sup> &nbsp;<span class="mut">&rarr;</span>&nbsp; <span class="vx">x<sub>p</sub></span> <span class="mut">&isin; &#8477;</span><sup><span class="vN">N</span><span class="mut">&times;(</span><span class="vP">P</span><span class="mut">&sup2;&middot;</span><span class="vC">C</span><span class="mut">)</span></sup><span class="mut">,</span> &nbsp; <span class="vN">N</span> <span class="mut">=</span> <span class="vH">H</span><span class="vW">W</span> <span class="mut">/</span> <span class="vP">P</span><span class="mut">&sup2;</span>
+      </div>
+      <div class="anat-grid">
+        <div></div>
+        <div class="symh" style="background:#EEF0F3;color:#15171E">x</div>
+        <div class="symh" style="background:#FBF1E0;color:#C77B12">P</div>
+        <div class="symh" style="background:#F2E8FB;color:#8B2FC9">N</div>
+        <div class="symh" style="background:#EEF0F3;color:#15171E">x<sub>p</sub></div>
+
+        <div class="rowlab">what it means</div>
+        <div class="pbox">The raw image: <span class="vH">height</span> &times; <span class="vW">width</span> &times; <span class="vC">colour channels</span>. <b>ViT-Base: <span class="vH">224</span>&times;<span class="vW">224</span>&times;<span class="vC">3</span>.</b></div>
+        <div class="pbox">Side length of one square patch, the only real knob. <b>ViT-Base: <span class="vP">16</span>.</b></div>
+        <div class="pbox">How many patches the image becomes, <span class="vH">H</span><span class="vW">W</span>/<span class="vP">P</span>&sup2;. <b>ViT-Base: <span class="vN">196</span>.</b></div>
+        <div class="pbox">The patches as a flat sequence: <span class="vN">N</span> rows of <span class="vP">P</span>&sup2;&middot;<span class="vC">C</span> numbers each. <b><span class="vN">196</span> &times; 768.</b></div>
+
+        <div class="rowlab">in our toy</div>
+        <div class="tbox"><span class="vH">6</span> &times; <span class="vW">6</span> &times; <span class="vC">3</span>, the tree.</div>
+        <div class="tbox"><span class="vP">2</span> &rarr; 2&times;2 patches.</div>
+        <div class="tbox"><span class="vH">6</span>&middot;<span class="vW">6</span> / <span class="vP">2</span>&sup2; = <span class="vN">9</span> patches.</div>
+        <div class="tbox"><span class="vN">9</span> &times; 12, each patch is <span class="vP">2</span>&middot;<span class="vP">2</span>&middot;<span class="vC">3</span> = 12 numbers.</div>
+      </div>
+
+      <p class="anatcap">The toy and the paper, side by side</p>
+      <table class="difftable">
+        <tr><th>Aspect</th><th class="toyh">Our toy</th><th class="paperh">ViT-Base (paper)</th></tr>
+        <tr><td class="label">Image</td><td class="toy">6 &times; 6 &times; 3</td><td class="paper">224 &times; 224 &times; 3</td></tr>
+        <tr><td class="label">Patch size</td><td class="toy">2 &times; 2</td><td class="paper">16 &times; 16</td></tr>
+        <tr><td class="label">Numbers / patch</td><td class="toy">12 &nbsp;(2&middot;2&middot;3)</td><td class="paper">768 &nbsp;(16&middot;16&middot;3)</td></tr>
+        <tr><td class="label">Patches N</td><td class="toy">9</td><td class="paper">196</td></tr>
+        <tr><td class="label">Patch split</td><td class="toy">a plain reshape</td><td class="paper">a plain reshape</td></tr>
+      </table>
+
+      <p class="intro" style="margin-top:16px">The paper itself leans on the word analogy here, patches handled just like text tokens, which is exactly the crutch this post sets down. On this side they're nothing but tiles of numbers.</p>
+
+      <div class="src"><b>References.</b> Paraphrased; the reshape reproduced as a fact.<br>
+        [1] Dosovitskiy et al., <i>An Image is Worth 16&times;16 Words</i>, ICLR 2021, &sect;3.1 (patch reshape, N = HW/P&sup2;). <a href="https://arxiv.org/abs/2010.11929" target="_blank" rel="noopener">arxiv.org/abs/2010.11929</a><br>
+        [2] Cordonnier et al., 2020 (2&times;2 patch precursor). <a href="https://arxiv.org/abs/1911.03584" target="_blank" rel="noopener">arxiv.org/abs/1911.03584</a></div>
+    </div>
+
+  </div></div>
+</div>
+</section>
+
+<section class="section">
+<p class="connect">Twelve numbers per patch is more than the rest of the machine wants to carry. So each patch gets squeezed down to a single short vector, its <em>token</em>, by a couple of hand-picked detectors.</p>
+<div class="vit" id="card-token">
+  <button class="flipbtn" id="flipbtn"><span class="ico">&#8634;</span><span class="lbl">Compare to the paper</span></button>
+
+  <div class="flipwrap">
+    <div class="inner" id="inner">
+
+      <!-- ============ FRONT : the toy ============ -->
+      <div class="face front" id="frontface">
+        <div class="eyebrow">Section · Tokens · the toy</div>
+        <h2>Squashing a patch into a single vector</h2>
+        <p class="intro">This is the step that earns its keep. A patch is 12 loose numbers; the rest of the machine wants one tidy vector per patch, a <b>token</b>. Two moves get us there. <b>Flatten</b>: unroll the patch into a line (just rearranging). <b>Embed</b>: take weighted sums of those numbers to get a few meaningful features. The embedding below is two detectors we picked by hand so you can do the math yourself. Pick a patch, then work out its averages.</p>
+
+        <div class="stage">
+          <div class="pane-l">
+            <p class="cap">Click a patch</p>
+            <svg id="timg" viewBox="0 0 156 156" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+          <div class="pane-r">
+            <div class="move">
+              <span class="movelab">Move 1 · Flatten</span>
+              <svg id="flat" viewBox="0 0 492 132" xmlns="http://www.w3.org/2000/svg"></svg>
+              <p class="sub">Unroll the 4 pixels in reading order: ① top-left, ② top-right, ③ bottom-left, ④ bottom-right, each carrying its R, G, B. Same 12 numbers, now in a line.</p>
+            </div>
+            <div class="move">
+              <span class="movelab">Move 2 · Embed (your turn)</span>
+              <div id="embed"></div>
+              <p class="note">Two hand-picked detectors. A real ViT <i>learns</i> its weights, hundreds of them, giving a much longer vector, but every output is still a weighted sum exactly like these.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tokenwrap">
+          <span class="movelab">Move 3 · Token space</span>
+          <svg id="plane" viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg"></svg>
+          <p class="tcap" id="tcap"></p>
+        </div>
+
+        <p class="foot"><b>Every patch is now one point in a 2-number space.</b> But these points carry no clue about <i>where</i> each patch sat in the picture. That gap is the next move, adding position.</p>
+      </div>
+
+      <!-- ============ BACK : the paper ============ -->
+      <div class="face back" id="backface">
+        <div class="eyebrow">From the paper · §3.1 &amp; Eq. 1</div>
+        <h2>What the real ViT does here</h2>
+        <p class="intro">The paper keeps it deliberately plain. An H&times;W&times;C image is cut into N square patches of side P, and each patch is flattened to a length-(P²·C) vector. A <b>single trainable matrix E</b> maps every flattened patch to the model's fixed width D, these are the &ldquo;patch embeddings,&rdquo; the paper's name for our tokens. Two things our toy skipped: a learnable <b>[class] token</b> is prepended to serve as the final image summary, and learnable <b>1-D position vectors</b> are added on top. The key difference: E isn't hand-designed for greenness and redness, it's <b>learned end-to-end</b>. Its weights are still plain numbers you can inspect; they're just not labeled for you, so making sense of them takes interpretability tools (the paper visualizes E and finds its leading components look like low-level filters).</p>
+
+        <p class="anatcap">Anatomy of Equation 1: each part, with its toy equivalent aligned below</p>
+        <div class="anat-eq">
+          <span class="z">z<sub>0</sub></span> <span class="mut">=</span> <span class="mut">[</span> <span class="cls">x<sub>class</sub></span> <span class="mut">;</span> <span class="xe">x<sup>1</sup><sub>p</sub>E</span> <span class="mut">; &hellip; ;</span> <span class="xe">x<sup>N</sup><sub>p</sub>E</span> <span class="mut">]</span> <span class="mut">+</span> <span class="posc">E<sub>pos</sub></span>
+        </div>
+        <div class="anat-grid">
+          <div></div>
+          <div class="symh" style="background:#ECEBFB;color:#3D3AE0">z<sub>0</sub></div>
+          <div class="symh" style="background:#EEF0F3;color:#5A6172">x<sub>class</sub></div>
+          <div class="symh" style="background:#FBECE9;color:#E2563F">x<sub>p</sub>E</div>
+          <div class="symh" style="background:#E6F5F2;color:#1F9E8F">E<sub>pos</sub></div>
+
+          <div class="rowlab">what it does</div>
+          <div class="pbox">The full sequence of token vectors fed to the transformer, one row per patch, plus the class token.</div>
+          <div class="pbox">A learnable token prepended to the sequence; its final state is read out as the image's label.</div>
+          <div class="pbox">Each patch <b>x<sub>p</sub></b> (flattened to P²·C numbers) times one shared trainable matrix <b>E</b> &rarr; that patch's token, for all N patches.</div>
+          <div class="pbox">Learnable position vectors added to every token so the model knows where each patch sat.</div>
+
+          <div class="rowlab">in our toy</div>
+          <div class="tbox">Our whole set of patch tokens, the points scattered across token-space.</div>
+          <div class="tbox">None. We just pool the patch tokens at the end instead.</div>
+          <div class="tbox"><b>(31, 29)</b>, from the centre patch.</div>
+          <div class="tbox">Comes next, our tokens carry no position yet.</div>
+        </div>
+
+        <table class="difftable">
+          <tr><th>Aspect</th><th class="toyh">Our toy</th><th class="paperh">ViT (paper)</th></tr>
+          <tr><td class="label">Patch size</td><td class="toy">2&times;2 pixels</td><td class="paper">16&times;16 pixels (e.g. ViT-L/16)</td></tr>
+          <tr><td class="label">Flattened patch</td><td class="toy">12 numbers (2·2·3)</td><td class="paper">768 numbers (16·16·3)</td></tr>
+          <tr><td class="label">Embedding</td><td class="toy">2 detectors we set by hand</td><td class="paper">one trainable matrix E, learned</td></tr>
+          <tr><td class="label">Token width D</td><td class="toy">2</td><td class="paper">768 (Base) / 1024 / 1280</td></tr>
+          <tr><td class="label">Reading the weights</td><td class="toy">we chose &amp; named them (greenness, redness)</td><td class="paper">learned numbers, readable too, but unlabeled; the paper visualizes E's top components and they resemble low-level filters</td></tr>
+          <tr><td class="label">Extra token</td><td class="toy">none</td><td class="paper">a learnable [class] token prepended</td></tr>
+          <tr><td class="label">Position info</td><td class="toy">added next step</td><td class="paper">learnable 1-D position embeddings</td></tr>
+        </table>
+
+        <div class="callout"><b>2&times;2 isn't a cartoon.</b> The paper cites Cordonnier et al. (2020), who ran a transformer on 2&times;2 patches exactly like ours. ViT went to 16&times;16 mainly to handle bigger images, so our tiny patches are &ldquo;small-resolution real,&rdquo; not made up.</div>
+
+        <div class="src"><b>References.</b> Paraphrased; equations and facts reproduced as facts.<br>
+          [1] Dosovitskiy et al., <i>An Image is Worth 16&times;16 Words</i>, ICLR 2021, §3.1 &amp; Eq. 1. <a href="https://arxiv.org/abs/2010.11929" target="_blank" rel="noopener">arxiv.org/abs/2010.11929</a><br>
+          [2] Cordonnier, Loukas &amp; Jaggi, <i>On the Relationship between Self-Attention and Convolutional Layers</i>, ICLR 2020. <a href="https://arxiv.org/abs/1911.03584" target="_blank" rel="noopener">arxiv.org/abs/1911.03584</a></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="section">
+<p class="connect">Each patch is a token now, but the tokens arrive in a heap with no memory of where their patch sat. To everything downstream, that heap is just a <em>set</em>: shuffle it and nothing changes. So position has to be stitched back in by hand.</p>
+<div class="vit" id="card-position">
+  <button class="flipbtn" id="flipbtn"><span class="ico">&#8634;</span><span class="lbl">Compare to the paper</span></button>
+
+  <div class="flipwrap">
+    <div class="inner" id="inner">
+
+      <!-- FRONT -->
+      <div class="face front" id="frontface">
+        <div class="eyebrow">Section · Position · the toy</div>
+        <h2>Where was each patch, and why can't the model tell?</h2>
+        <p class="intro sentences">
+          <span>In the last step we saw, every patch became a token <span class="zt">Z</span>, and that vector is <b>all the model ever sees of that patch</b>. Stack them up and the image is just a <b>bag of Z's</b> with no order.</span>
+          <span>Attention reads that bag the same however it's arranged, so <b>any two images with the same set of Z's are identical to the model</b>, including every shuffle of our tree.</span>
+          <span>With position off, shuffle and watch the bag on the right never change.</span>
+          <span>Now, turn on <b>add sinusoidal</b>, pick a slot, and shuffle again. Watch its coordinates move this time. The network only ever sees coordinates, so this is the only difference it can possibly notice.</span>
+        </p>
+
+        <div class="controls">
+          <div class="seg" id="seg">
+            <button data-v="off" class="on">Position: off</button>
+            <button data-v="on">add sinusoidal</button>
+          </div>
+          <button class="btn" id="shuf"><span>&#8646;</span> Shuffle</button>
+          <button class="btn" id="reset"><span>&#8635;</span> Reset to tree</button>
+        </div>
+
+        <div class="stage">
+          <div class="pane-l">
+            <p class="cap">The image · slots 0–8</p>
+            <svg id="pimg" viewBox="0 0 156 156" xmlns="http://www.w3.org/2000/svg"></svg>
+            <p class="imgnote">click a slot to inspect it</p>
+          </div>
+          <div class="pane-r">
+            <p class="cap">What the model sees · the set of Z</p>
+            <svg id="pplane" viewBox="0 0 470 240" xmlns="http://www.w3.org/2000/svg"></svg>
+            <p class="pcap" id="pcap"></p>
+          </div>
+        </div>
+
+        <div class="poscode">
+          <p class="cap">The position code · how sin &amp; cos make a circle</p>
+          <p class="posnote">Two choices, both just for this toy: <b>40&deg;</b> is 360&deg;&divide;9, one full turn split evenly across the 9 slots, so every patch gets its own spot on the circle. <b>28</b> is the circle's radius, chosen so the position code is a clearly visible nudge, about a sixth of our tokens' overall spread (about &minus;54 to 116, a range of 170), enough to noticeably shift a token without overwhelming the content it already carries.</p>
+          <div class="pcrow">
+            <svg id="pring" viewBox="0 0 160 168" xmlns="http://www.w3.org/2000/svg"></svg>
+            <div class="pcalc" id="pcalc"></div>
+          </div>
+        </div>
+
+        <p class="foot"><b>Now every token carries both <i>what</i> and <i>where</i>.</b> That's the complete input, and the attention stage is finally ready to chew on it. That's next.</p>
+      </div>
+
+      <!-- BACK -->
+      <div class="face back" id="backface">
+        <div class="eyebrow">From the paper · position</div>
+        <h2>Telling the model where each patch was</h2>
+        <p class="intro">A pile of patch tokens has no inherent order, and self-attention is <b>permutation-invariant</b>: swap two tokens and the output just swaps with them, nothing else changes. So position has to be added in. ViT does it with a <b>learnable</b> vector per slot, the <span style="color:var(--teal);font-weight:600">+ E<sub>pos</sub></span> in Equation 1. In the paper's own words they use <b>&ldquo;standard learnable 1D position embeddings&rdquo;</b> [1], and report no real gain from fancier 2D-aware ones.</p>
+
+        <div class="learnbox">
+          <p class="lbcap">How does a &ldquo;learnable&rdquo; E<sub>pos</sub> actually learn?</p>
+          <p>It begins as <b>random vectors, one per slot</b>, that say nothing about where each patch sits. During training they ride along with every other weight under gradient descent: whenever a slot's vector helps the model land the right label, that nudge sticks; when it hurts, it's pushed back. The paper notes these vectors start out carrying no information about 2D layout, so <b>every spatial relationship has to be learned from scratch</b>. By the end, neighbouring slots have drifted toward similar vectors, the grid is rediscovered, never hard-coded.</p>
+        </div>
+
+        <p class="anatcap">The sinusoidal alternative: what our toy mimics (Vaswani 2017)</p>
+        <div class="formula">
+          PE(pos, 2i) &nbsp;= sin( pos / 10000<sup>2i/d</sup> )<br>
+          PE(pos, 2i+1) = cos( pos / 10000<sup>2i/d</sup> )<br>
+          <span class="mut">Fixed, not learned. ViT follows Vaswani's Transformer <i>encoder</i> closely [1], but for position it picks learnable codes over these. The toy uses sin/cos because you can work them out by hand.</span>
+        </div>
+
+        <p class="anatcap">Our toy vs. what ViT actually does</p>
+        <div class="anat-grid">
+          <div></div>
+          <div class="symh" style="background:#FBECE9;color:#E2563F">Our toy</div>
+          <div class="symh" style="background:#ECEBFB;color:#3D3AE0">Learned 1-D<br>(ViT)</div>
+
+          <div class="rowlab">how it works</div>
+          <div class="tbox"><b style="color:#b23a26">sin &amp; cos</b> of a slot's index &rarr; a point on a circle, added to its token.</div>
+          <div class="pbox">A trainable vector per slot, simply added to that token, tuned by gradient descent.</div>
+
+          <div class="rowlab">fixed or learned</div>
+          <div class="tbox"><b style="color:#b23a26">Fixed.</b> A hand-picked stand-in, chosen so you can compute it, not what ViT uses.</div>
+          <div class="pbox"><b>Learned.</b> This is the +E<sub>pos</sub> in Equation 1, what ViT actually uses.</div>
+        </div>
+
+        <div class="src"><b>References.</b> Paraphrased; one short quote [1] and the formula reproduced as facts.<br>
+          [1] Dosovitskiy et al., <i>An Image is Worth 16&times;16 Words</i>, ICLR 2021, §3.1 (&ldquo;standard learnable 1D position embeddings&rdquo;; ViT follows the Vaswani encoder). <a href="https://arxiv.org/abs/2010.11929" target="_blank" rel="noopener">arxiv.org/abs/2010.11929</a><br>
+          [2] Vaswani et al., <i>Attention Is All You Need</i>, NeurIPS 2017 (sinusoidal positional encoding). <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arxiv.org/abs/1706.03762</a></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="section">
+<p class="connect">Colour and position are in place. What's still missing is context, and that's where attention comes in.</p>
+<div class="vit" id="card-attn-setup">
+  <button class="flipbtn" id="flipbtn"><span class="ico">&#8634;</span><span class="lbl">Compare to the paper</span></button>
+
+  <div class="flipwrap">
+    <div class="inner" id="inner">
+
+      <!-- FRONT -->
+      <div class="face front" id="frontface">
+        <div class="eyebrow">Section · Attention · the setup</div>
+        <h2>Every patch is an island. Attention builds the bridges.</h2>
+        <p class="intro">After the last steps each patch is a token that knows its own colour and position, and <b>nothing else</b>. A lone green square can't tell <i>leaf</i> from <i>grass</i> from <i>a green door</i>. To recognise a tree, patches have to share what they see. Attention is how each patch <b>polls every other patch</b> and rewrites itself with what it learns. Before any arithmetic, here's the shape of one round. Step through it.</p>
+
+        <div class="steps" id="steps">
+          <button data-s="1" class="on">1 &middot; Query</button>
+          <button data-s="2">2 &middot; Score</button>
+          <button data-s="3">3 &middot; Blend</button>
+        </div>
+
+        <div class="stage">
+          <div class="pane-l">
+            <p class="cap">Pick the asker</p>
+            <svg id="pimg" viewBox="0 0 156 156" xmlns="http://www.w3.org/2000/svg"></svg>
+            <p class="imgnote">click a patch &middot; asker = <span style="color:#E2563F">coral</span></p>
+          </div>
+          <div class="pane-r">
+            <p class="cap">One round of attention</p>
+            <svg id="round" viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+        </div>
+
+        <div class="defbox" id="defbox"></div>
+
+        <div class="pipe">
+          <p class="cap">The whole round, in three moves, the next cards fill in the numbers</p>
+          <div class="pipe-row">
+            <div class="pchip s"><div class="h">1 · score</div><div>score = <b>Q &middot; K</b></div><div class="mut">how well the query lines up with each key</div></div>
+            <span class="arrow">&#8594;</span>
+            <div class="pchip w"><div class="h">2 · weight</div><div>w = <b>softmax</b>(scores)</div><div class="mut">scores &rarr; weights that add to 100%</div></div>
+            <span class="arrow">&#8594;</span>
+            <div class="pchip b"><div class="h">3 · blend</div><div>new = <b>&Sigma; w &middot; V</b></div><div class="mut">become the weighted blend of values</div></div>
+          </div>
+        </div>
+
+        <p class="foot"><b>Two questions are still open:</b> how is a <span style="color:#3D3AE0;font-weight:600">Query</span> actually built, and what counts as a good <span style="color:#1F9E8F;font-weight:600">match</span> with a <span style="color:#1F9E8F;font-weight:600">Key</span>? The next two cards answer that with real numbers: first the obvious rule (<b>match</b>), then the surprising one (<b>bind</b>).</p>
+      </div>
+
+      <!-- BACK -->
+      <div class="face back" id="backface">
+        <div class="eyebrow">From the paper · the three projections</div>
+        <h2>Query, Key, Value: three views of one token</h2>
+        <p class="intro">In a real Transformer, each token is pushed through <b>three separate learned matrices</b> to play three roles at once. The <b>query</b> asks, the <b>key</b> answers, the <b>value</b> is what gets passed on. Attention scores every query against every key, softmaxes the scores into weights, and returns the weighted sum of values.</p>
+
+        <div class="formula">
+          Attention(Q, K, V) = softmax( Q K<sup>T</sup> / &radic;d<sub>k</sub> ) V<br>
+          Q = X W<sub>Q</sub> , &nbsp; K = X W<sub>K</sub> , &nbsp; V = X W<sub>V</sub><br>
+          <span class="mut">X = the patch tokens; W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub> are learned. &radic;d<sub>k</sub> keeps the scores from saturating the softmax.</span>
+        </div>
+
+        <p class="anatcap">What each role means</p>
+        <div class="three">
+          <div class="tcard q"><div class="h">Query &middot; Q</div><b>What am I looking for?</b> The question this patch broadcasts.</div>
+          <div class="tcard k"><div class="h">Key &middot; K</div><b>What do I offer?</b> The label each patch holds up to be matched against.</div>
+          <div class="tcard v"><div class="h">Value &middot; V</div><b>What I hand over.</b> The content a patch contributes when attended to.</div>
+        </div>
+
+        <p class="intro" style="margin-top:16px">Because Q and K come from <b>different</b> matrices, a patch's question need not look like its own label, which is exactly what lets it attend to things <i>unlike</i> itself. Our toy keeps <b>K and V as the raw token</b> and only changes the <b>query</b>, so across the next cards you can watch that one idea do all the work.</p>
+
+        <div class="src"><b>Reference.</b> Equation reproduced as a fact; prose paraphrased.<br>
+          [1] Vaswani et al., <i>Attention Is All You Need</i>, NeurIPS 2017 (scaled dot-product attention; Q/K/V projections). <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arxiv.org/abs/1706.03762</a></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="section">
+<p class="connect">Start with the obvious rule. A patch could simply ask: <em>who else looks like me?</em></p>
+<div class="vit" id="card-attn-match">
+  <div class="eyebrow">Section · Attention · rule 1 of 2</div>
+  <h2>Match: pay attention to whoever&rsquo;s most like you</h2>
+  <p class="intro">The simplest possible query: a patch just uses <b>itself</b> as the question. Then &ldquo;relevance&rdquo; means <b>how alike are we?</b>, and the measure of alikeness is the <b>dot product</b> of the two tokens. Big and positive when they point the same way, negative when they're opposites. Pick an asker, then <b>compute one score yourself</b>.</p>
+
+  <div class="controls">
+    <button class="btn primary" id="blend">Blend it in &#8594;</button>
+    <button class="btn" id="reset"><span>&#8635;</span> Reset</button>
+    <span style="font-family:var(--mono);font-size:11px;color:#5A6172">click a patch = asker &middot; click a bar = inspect that key</span>
+  </div>
+
+  <div class="stage">
+    <div class="pane-l">
+      <p class="cap">Asker = query</p>
+      <svg id="pimg" viewBox="0 0 156 156" xmlns="http://www.w3.org/2000/svg"></svg>
+      <p class="imgnote">query = <span style="color:#E2563F">coral</span></p>
+    </div>
+    <div class="pane-r">
+      <p class="cap">Token space &middot; arrows = attention weight</p>
+      <svg id="pplane" viewBox="0 0 470 250" xmlns="http://www.w3.org/2000/svg"></svg>
+      <p class="pcap" id="pcap"></p>
+    </div>
+  </div>
+
+  <div class="calcrow">
+    <div class="diy">
+      <p class="cap">Do it yourself &middot; score = Q &middot; K</p>
+      <div class="diybox" id="diybox"></div>
+    </div>
+    <div class="bars">
+      <p class="cap">Attention weights</p>
+      <div id="bars"></div>
+    </div>
+  </div>
+
+  <p class="foot"><b>Match groups like with like</b>. Greens pool with greens, the trunk keeps to itself. Useful, but notice the canopy <i>never looks at the trunk</i>. A rule that only rewards similarity can't tie a leaf to the very thing that makes it part of a tree. For that, a patch has to ask for something <b>unlike</b> itself. The next card.</p>
+</div>
+</section>
+
+<section class="section">
+<p class="connect">Match groups like with like, but a tree isn't made of identical patches. To bind canopy to trunk, a patch has to ask for something it <em>isn't</em>.</p>
+<div class="vit" id="card-attn-bind">
+  <div class="eyebrow">Section · Attention · rule 2 of 2</div>
+  <h2>Bind: rotate the question, and a patch can seek its opposite</h2>
+  <p class="intro">Match only ever pulls together things that are <b>alike</b>. But a tree isn't made of identical patches. It's <span class="g" style="color:#1F9E8F;font-weight:600">green canopy</span> <i>and</i> <span class="hot" style="color:#E2563F;font-weight:600">brown trunk</span>, two tokens pointing opposite ways. For the canopy to gather the trunk, its query must point somewhere <b>other than itself</b>. The trick is to <b>rotate the query</b>: now &ldquo;what I look for&rdquo; is no longer &ldquo;what I am.&rdquo; Drag the dial and watch where the canopy's attention goes.</p>
+
+  <div class="rotrow">
+    <span class="lbl">rotate the query &theta;</span>
+    <button class="snap" id="snap0">match · 0&deg;</button>
+    <input type="range" id="theta" min="0" max="90" step="1" value="0" />
+    <button class="snap" id="snap90">bind · 90&deg;</button>
+    <span class="val" id="tval">0&deg;</span>
+  </div>
+
+  <div class="controls">
+    <button class="btn primary" id="blend">Blend it in &#8594;</button>
+    <button class="btn" id="reset"><span>&#8635;</span> Reset</button>
+    <span style="font-family:var(--mono);font-size:11px;color:#5A6172">click a patch to choose a different asker</span>
+  </div>
+
+  <div class="stage">
+    <div class="pane-l">
+      <p class="cap">Asker</p>
+      <svg id="pimg" viewBox="0 0 156 156" xmlns="http://www.w3.org/2000/svg"></svg>
+      <p class="imgnote">asker = <span style="color:#E2563F">coral</span></p>
+    </div>
+    <div class="pane-r">
+      <p class="cap">Token space &middot; <span style="color:#3D3AE0">indigo ray</span> = the query direction</p>
+      <svg id="pplane" viewBox="0 0 470 250" xmlns="http://www.w3.org/2000/svg"></svg>
+      <p class="pcap" id="pcap"></p>
+    </div>
+  </div>
+
+  <div class="geowrap">
+    <div class="geo">
+      <p class="cap">What the rotation does</p>
+      <div id="geo"></div>
+    </div>
+    <div class="bars">
+      <p class="cap">Attention weights</p>
+      <div id="bars"></div>
+    </div>
+  </div>
+
+  <div class="frombox">
+    <div class="h">Where does &ldquo;rotate the query&rdquo; come from?</div>
+    In a real Transformer the query isn't the token, it's <code>Q = X&middot;W<sub>Q</sub></code>, a <b>learned</b> linear map. Linear maps can rotate, scale and shear, so the network is free to learn a query that points <b>wherever is useful</b>, including straight at a patch's opposite. Our fixed 90&deg; turn is just the simplest such map, hard-coded so you can <i>see</i> the mechanism, real models discover their own from data, which is how a canopy detector learns to go looking for trunks.
+  </div>
+
+  <p class="foot"><b>One knob, the query's rotation, turns &ldquo;find my twins&rdquo; into &ldquo;find what completes me.&rdquo;</b> That's the whole reason Q and K are separate, learned things. Next we put match and bind together and watch a few patches rewrite each other into something that finally <i>knows</i> it's a tree.</p>
+</div>
+</section>
+
+<section class="section">
+<p class="connect">Neither question alone is the answer: real attention asks several at once, in parallel, and combines what comes back. Here's both of ours, running together.</p>
+<div class="vit" id="card-attn-combined">
+  <button class="flipbtn" id="flipbtn"><span class="ico">&#8634;</span><span class="lbl">Compare to the paper</span></button>
+
+  <div class="flipwrap">
+    <div class="inner" id="inner">
+
+      <!-- FRONT -->
+      <div class="face front" id="frontface">
+        <div class="eyebrow">Section · Attention · in harmony</div>
+        <h2>Both questions at once, and the image coheres</h2>
+        <p class="intro">A real model never picks match <i>or</i> bind. It runs many <b>heads</b> in parallel, each asking its own question, then fuses the answers. Here we run the two you just met: a <span class="g" style="color:#1F9E8F;font-weight:600">match head</span> (who's like me?) and a <span class="i" style="color:#3D3AE0;font-weight:600">bind head</span> (who completes me?), and combine them. Watch one patch fuse both, then run the layer on the whole image.</p>
+
+        <div class="seg" id="seg">
+          <button data-v="one" class="on">one patch &middot; two heads</button>
+          <button data-v="layer">the whole layer</button>
+        </div>
+
+        <div class="stage">
+          <div class="pane-l">
+            <p class="cap" id="lcap">Asker</p>
+            <svg id="pimg" viewBox="0 0 156 156" xmlns="http://www.w3.org/2000/svg"></svg>
+            <p class="imgnote" id="inote">asker = <span style="color:#E2563F">coral</span></p>
+          </div>
+          <div class="pane-r">
+            <p class="cap" id="planecap">Token space</p>
+            <svg id="pplane" viewBox="0 0 470 250" xmlns="http://www.w3.org/2000/svg"></svg>
+            <p class="pcap" id="pcap"></p>
+          </div>
+        </div>
+
+        <div id="panel"></div>
+
+        <p class="foot"><b>That is one attention layer.</b> Stack a handful and every token ends up steeped in the others, the canopy carries trunk, the trunk carries canopy, the blanks carry the gist. The set of tokens no longer says &ldquo;some greens, some browns&rdquo;; it says <i>tree</i>. The final step just reads that out as a label.</p>
+      </div>
+
+      <!-- BACK -->
+      <div class="face back" id="backface">
+        <div class="eyebrow">From the paper · attention</div>
+        <h2>Self-attention &amp; multi-head, mapped to the toy</h2>
+        <p class="intro">Each token is projected into a <b>query</b>, <b>key</b> and <b>value</b>. Every query is dotted with every key, scaled and softmaxed into weights, and the token is rewritten as the weighted sum of values. Several <b>heads</b> do this in parallel, different learned questions, and their outputs are concatenated and projected back. It's <b>global from the first layer</b>: in ViT the <b>&ldquo;self-attention layers are global&rdquo;</b> [2].</p>
+
+        <div class="formula">
+          Attention(Q, K, V) = softmax( Q K<sup>T</sup> / &radic;d<sub>k</sub> ) V<br>
+          Q = X W<sub>Q</sub> , &nbsp; K = X W<sub>K</sub> , &nbsp; V = X W<sub>V</sub><br>
+          MultiHead = Concat(head<sub>1</sub>, &hellip;, head<sub>h</sub>) W<sub>O</sub><br>
+          <span class="mut">&radic;d<sub>k</sub> stops the dot products saturating the softmax. ViT-Base: h = 12 heads, width D = 768.</span>
+        </div>
+
+        <p class="anatcap">Each piece: paper vs. our toy</p>
+        <div class="anat-grid">
+          <div></div>
+          <div class="symh" style="background:#ECEBFB;color:#3D3AE0">Real attention<br>(ViT / Transformer)</div>
+          <div class="symh" style="background:#FBECE9;color:#E2563F">Our toy</div>
+
+          <div class="rowlab">query Q</div>
+          <div class="pbox"><b>Learned</b> X W<sub>Q</sub> per head, the net decides what each patch looks for.</div>
+          <div class="tbox">Two fixed stand-ins: the token (<b>match</b>) and the token rotated 90&deg; (<b>bind</b>).</div>
+
+          <div class="rowlab">key K / value V</div>
+          <div class="pbox">Two more learned projections X W<sub>K</sub>, X W<sub>V</sub>.</div>
+          <div class="tbox">Both are just the raw token, so the geometry stays readable.</div>
+
+          <div class="rowlab">scale</div>
+          <div class="pbox">Divide scores by &radic;d<sub>k</sub> before softmax.</div>
+          <div class="tbox">Scale by the row's largest score, same job.</div>
+
+          <div class="rowlab">heads</div>
+          <div class="pbox"><b>12</b> in parallel, then Concat &middot; W<sub>O</sub>.</div>
+          <div class="tbox"><b>2</b> heads (match + bind), fused by averaging, a stand-in for Concat &middot; W<sub>O</sub>.</div>
+        </div>
+
+        <p class="intro" style="margin-top:16px">The toy's two heads are the whole point of <i>learned</i>, <i>separate</i> Q and K: one head can group like-with-like while another binds a patch to its opposite, and a real model runs a dozen such questions at once.</p>
+
+        <div class="src"><b>References.</b> Paraphrased; one short quote [2] and the equations reproduced as facts.<br>
+          [1] Vaswani et al., <i>Attention Is All You Need</i>, NeurIPS 2017 (scaled dot-product &amp; multi-head attention). <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">arxiv.org/abs/1706.03762</a><br>
+          [2] Dosovitskiy et al., <i>An Image is Worth 16&times;16 Words</i>, ICLR 2021, §3.1 &amp; Inductive-bias note (MSA encoder; global self-attention; 12 heads). <a href="https://arxiv.org/abs/2010.11929" target="_blank" rel="noopener">arxiv.org/abs/2010.11929</a></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="section">
+<p class="connect">One more move, and we're done. Everything attention built up, colour, position, and now a little of every other patch, gets squashed into a single vector and handed to the simplest possible reader: a straight line.</p>
+<div class="vit" id="card-classify">
+  <button class="flipbtn" id="flipbtn"><span class="ico">&#8634;</span><span class="lbl">Compare to the paper</span></button>
+
+  <div class="flipwrap">
+    <div class="inner" id="inner">
+
+      <!-- FRONT -->
+      <div class="face front" id="frontface">
+        <div class="eyebrow">Section · Classify · the toy</div>
+        <h2>Squash everything into one vector, and read off the label</h2>
+        <p class="intro sentences">
+          <span>Nine tokens, each carrying a little colour and a little position, now also carry a little of <i>each other</i>, that's what the attention layer did.</span>
+          <span>The last move is the simplest in the whole pipeline: <b>average all nine tokens into one</b>, and feed that single vector to a small classifier.</span>
+          <span>Switch between <b>before</b> and <b>after</b> attention and watch the averaged point, and the score, move.</span>
+        </p>
+
+        <div class="seg" id="seg">
+          <button data-v="before" class="on">before attention</button>
+          <button data-v="after">after attention</button>
+        </div>
+
+        <div class="stage">
+          <div class="pane-l">
+            <p class="cap">The nine tokens</p>
+            <table class="pooltable" id="pooltable"></table>
+          </div>
+          <div class="pane-r">
+            <p class="cap">Average pool &middot; <span style="color:#E2563F">solid red</span> = current pool &middot; <span style="color:#cbd0da">faint</span> = the other state</p>
+            <svg id="pplane" viewBox="0 0 470 250" xmlns="http://www.w3.org/2000/svg"></svg>
+            <p class="pcap" id="pcap"></p>
+          </div>
+        </div>
+
+        <div class="scorerow">
+          <div class="scorebox">
+            <p class="cap">The classifier, by hand &middot; score = w<sub>green</sub>&middot;greenness + w<sub>brown</sub>&middot;redness + b</p>
+            <div class="calc" id="calc"></div>
+          </div>
+          <div class="gauge">
+            <p class="cap">Decision</p>
+            <svg id="gauge" viewBox="0 0 260 90" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+        </div>
+
+        <p class="foot"><b>That's the whole pipeline.</b> Pixels &rarr; patches &rarr; tokens &rarr; positions &rarr; attention &rarr; one vector &rarr; a number &rarr; a label. Nothing in here ever saw a "tree". Only coordinates, dot products, and a weighted sum that happens to land on the right side of zero once attention has done its job.</p>
+      </div>
+
+      <!-- BACK -->
+      <div class="face back" id="backface">
+        <div class="eyebrow">From the paper · classification head</div>
+        <h2>The [class] token and the MLP head</h2>
+        <p class="intro">ViT doesn't average every token. It prepends one extra learnable token, <b>[class]</b>, to the sequence before the first layer. After all the attention layers, that one token's final vector is treated as a summary of the whole image, and a small <b>MLP head</b> turns it into class scores.</p>
+
+        <div class="formula">
+          y = MLP( LN( z<sub>L</sub><sup>0</sup> ) )<br>
+          <span class="mut">z<sub>L</sub><sup>0</sup></span> <span class="mut">= the [class] token's vector after the last (L-th) layer; LN = layer norm; MLP = a small feed-forward head &rarr; class logits.</span>
+        </div>
+
+        <p class="anatcap">Our toy vs. ViT's head</p>
+        <div class="anat-grid">
+          <div></div>
+          <div class="symh" style="background:#FBECE9;color:#E2563F">Our toy</div>
+          <div class="symh" style="background:#ECEBFB;color:#3D3AE0">ViT</div>
+
+          <div class="rowlab">summary vector</div>
+          <div class="tbox"><b style="color:#b23a26">Average</b> of all 9 tokens after attention.</div>
+          <div class="pbox">The dedicated <b>[class]</b> token's vector after attention, it attended to everything too.</div>
+
+          <div class="rowlab">readout</div>
+          <div class="tbox"><b style="color:#b23a26">One linear score</b>, by hand: w&middot;v + b.</div>
+          <div class="pbox">A small <b>MLP</b> (one hidden layer in pre-training) producing logits over all classes.</div>
+
+          <div class="rowlab">why it works at all</div>
+          <div class="tbox">Only because attention <b>spread the trunk's signal</b> into the average, before attention, the score was near zero.</div>
+          <div class="pbox">Same idea, at scale: by the last layer every token, including [class], has aggregated global context.</div>
+        </div>
+
+        <p class="intro" style="margin-top:16px">Either way the moral is the same: classification is the <i>easy</i> part: a single learned line drawn through vector space. All the work happened earlier, in attention, getting the representation to a place where a straight line could separate it.</p>
+
+        <div class="src"><b>Reference.</b> Paraphrased; the readout reproduced as a fact.<br>
+          [1] Dosovitskiy et al., <i>An Image is Worth 16&times;16 Words</i>, ICLR 2021, &sect;3.1 (Eq. 4: [class] token, layer norm, MLP head). <a href="https://arxiv.org/abs/2010.11929" target="_blank" rel="noopener">arxiv.org/abs/2010.11929</a></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</section>
+<p class="connect">Hopefully this gave you an intuitive feel for the attention mechanism inside a Vision
+Transformer, built from one small image, no language detour required. From here, the original
+papers should read a lot less like a foreign language.</p>
+
+<p class="connect">A few real ideas got left out along the way, deliberately. Not because they don't
+matter, building intuition for <em>one</em> mechanism was the goal, and dragging in every
+piece of the architecture would have made this very long. Worth knowing about when you go further:</p>
+<ul class="topic-list">
+  <li><b>Residual connections.</b> Attention's output doesn't replace a token, it's added to it. Each layer nudges the tokens rather than overwriting them, which is part of why deep stacks are trainable at all.</li>
+  <li><b>Layer normalization.</b> Before each attention and MLP step, every token is rescaled to a consistent range. It keeps the numbers well-behaved as they pass through many layers.</li>
+  <li><b>Multi-head attention.</b> Real ViT runs many heads in parallel, twelve in ViT-Base, each asking a different question, then combines the results. Our toy's two heads (match and bind) are a stand-in for that whole bank.</li>
+  <li><b>The [class] token.</b> ViT prepends one extra learnable token to the sequence. It starts with no special meaning and only becomes a useful summary because it's trained, end to end, to be one. ViT also stacks 12 to 32 of these layers depending on model size, each refining the same set of tokens a little further.</li>
+</ul>
+
+<p class="connect">And if you want more ways into this, including the language-transformer
+route this post deliberately avoided, these are excellent:</p>
+<ul class="reading-list">
+  <li><a href="https://jalammar.github.io/illustrated-transformer/" target="_blank" rel="noopener">The Illustrated Transformer</a>, Jay Alammar's visual walkthrough of the original architecture.</li>
+  <li><a href="https://distill.pub/2016/augmented-rnns/" target="_blank" rel="noopener">Attention and Augmented Recurrent Neural Networks</a>, Distill's earlier look at attention before transformers took over.</li>
+  <li><a href="https://www.youtube.com/watch?v=eMlx5fFNoYc" target="_blank" rel="noopener">Andrej Karpathy, "Let's build GPT"</a> (video), attention coded from scratch, line by line.</li>
+</ul>
+</div>
+<script>
+
+(function(){
+  var root=document.getElementById('card-overview');
+  // 1 = canopy (green), 2 = trunk (brown), 0 = background
+  var IMG=[[0,0,1,1,0,0],[0,1,1,1,1,0],[1,1,1,1,1,1],[0,0,2,2,0,0],[0,0,2,2,0,0],[0,0,2,2,0,0]];
+
+  function imgSVG(grid){
+    var cs=15, ox=89, oy=20, s='';
+    var col={1:'#34A85B', 2:'#A06A3F'};
+    for(var r=0;r<6;r++)for(var c=0;c<6;c++){
+      var v=IMG[r][c];
+      if(!v) continue;
+      // slight overlap (+0.6) fuses same-colour cells into a solid shape, no white lines
+      s+='<rect x="'+(ox+c*cs)+'" y="'+(oy+r*cs)+'" width="'+(cs+0.6)+'" height="'+(cs+0.6)+'" fill="'+col[v]+'"/>';
+    }
+    if(grid){
+      for(var k=1;k<3;k++){
+        s+='<line x1="'+(ox+k*2*cs)+'" y1="'+oy+'" x2="'+(ox+k*2*cs)+'" y2="'+(oy+6*cs)+'" stroke="#3D3AE0" stroke-width="2"/>';
+        s+='<line x1="'+ox+'" y1="'+(oy+k*2*cs)+'" x2="'+(ox+6*cs)+'" y2="'+(oy+k*2*cs)+'" stroke="#3D3AE0" stroke-width="2"/>';
+      }
+      s+='<rect x="'+ox+'" y="'+oy+'" width="'+(6*cs)+'" height="'+(6*cs)+'" fill="none" stroke="#3D3AE0" stroke-width="2"/>';
+    }
+    return '<svg viewBox="0 0 268 130" xmlns="http://www.w3.org/2000/svg">'+s+'</svg>';
+  }
+
+  function tokSVG(opts){
+    opts=opts||{};
+    var n=9, x=opts.x!=null?opts.x:96, top=12, h=10, gap=2.6, w=64, s='';
+    var shades=['#C8CBF6','#3D3AE0','#A9D6CF','#1F9E8F','#F4C9BE'];
+    var ys=[];
+    for(var i=0;i<n;i++){
+      var y=top+i*(h+gap); ys.push(y);
+      var faded = opts.attn && opts.focus!=null && i!==opts.focus && opts.links.indexOf(i)<0;
+      var op = faded?0.32:1;
+      s+='<g opacity="'+op+'">';
+      for(var j=0;j<4;j++){
+        s+='<rect x="'+(x+j*(w/4))+'" y="'+y+'" width="'+(w/4-1)+'" height="'+h+'" rx="1.5" fill="'+shades[(i+j)%shades.length]+'"/>';
+      }
+      s+='</g>';
+      if(opts.pos){
+        s+='<text x="'+(x-8)+'" y="'+(y+h-1.5)+'" text-anchor="end" font-family="Space Mono,monospace" font-size="8" fill="#5A6172">'+(i+1)+'</text>';
+      }
+    }
+    if(opts.attn){
+      var f=opts.focus, fx=x+w+2, fy=ys[f]+h/2;
+      // box the focus row
+      s+='<rect x="'+(x-2)+'" y="'+(ys[f]-2)+'" width="'+(w+4)+'" height="'+(h+4)+'" rx="3" fill="none" stroke="#E2563F" stroke-width="1.6"/>';
+      opts.links.forEach(function(t){
+        var ty=ys[t]+h/2;
+        var mx=fx+22;
+        s+='<path d="M'+fx+','+fy+' C'+mx+','+fy+' '+mx+','+ty+' '+(fx)+','+ty+'" fill="none" stroke="#E2563F" stroke-width="1.6" opacity="0.85"/>';
+        s+='<circle cx="'+fx+'" cy="'+ty+'" r="2.4" fill="#E2563F"/>';
+      });
+      s+='<circle cx="'+fx+'" cy="'+fy+'" r="2.6" fill="#E2563F"/>';
+    }
+    return '<svg viewBox="0 0 268 130" xmlns="http://www.w3.org/2000/svg">'+s+'</svg>';
+  }
+
+  function classifySVG(){
+    var s='', x=20, top=20, h=10, gap=3, w=52;
+    for(var i=0;i<7;i++){
+      var y=top+i*(h+gap);
+      s+='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="2" fill="#C8CBF6"/>';
+      s+='<path d="M'+(x+w+4)+','+(y+h/2)+' L'+(118)+','+62+'" stroke="#D5D8E0" stroke-width="1"/>';
+    }
+    // summary bar
+    s+='<rect x="100" y="54" width="40" height="16" rx="3" fill="#3D3AE0"/>';
+    s+='<text x="120" y="66" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="#fff">sum</text>';
+    s+='<path d="M144,62 L168,62" stroke="#15171E" stroke-width="1.4" marker-end=""/>';
+    s+='<polygon points="168,58 176,62 168,66" fill="#15171E"/>';
+    // label + confidence
+    s+='<rect x="182" y="44" width="74" height="20" rx="5" fill="#15171E"/>';
+    s+='<text x="219" y="58" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-size="12" font-weight="600" fill="#fff">tree ✓</text>';
+    s+='<rect x="182" y="70" width="74" height="6" rx="3" fill="#EAEDF2"/>';
+    s+='<rect x="182" y="70" width="63" height="6" rx="3" fill="#1F9E8F"/>';
+    s+='<text x="182" y="90" font-family="Space Mono,monospace" font-size="8" fill="#5A6172">85% confident</text>';
+    return '<svg viewBox="0 0 268 110" xmlns="http://www.w3.org/2000/svg">'+s+'</svg>';
+  }
+
+  var STAGES=[
+    { lab:'Input image', accent:'#3D3AE0', tag:'where we begin', tagbg:'var(--truth-wash)', tagfg:'#3D3AE0',
+      ttl:'One picture goes in', micro:'Data so far: a grid of pixels.',
+      desc:'You hand the model one picture: here, a tree straight out of Lego Land. That is the entire input: no labels, no hints. Everything that follows is about reshaping this picture into something a network can turn into the answer “tree”.',
+      vis:function(){return imgSVG(false);} },
+    { lab:'Cut into patches', accent:'#3D3AE0', tag:'Section · Patches', tagbg:'var(--truth-wash)', tagfg:'#3D3AE0',
+      ttl:'Chop it into a grid of tiles', micro:'Data so far: 9 small square patches.',
+      desc:'Slice the image into a grid of small square patches. From here on the model never looks at the whole picture at once, it only ever sees these tiles. This is the single idea that makes a "vision" version possible.',
+      vis:function(){return imgSVG(true);} },
+    { lab:'Embed patches', accent:'#3D3AE0', tag:'Section · Tokens', tagbg:'var(--truth-wash)', tagfg:'#3D3AE0',
+      ttl:'Turn each tile into a vector', micro:'Data so far: a short stack of vectors ("tokens").',
+      desc:'Unroll each tile into a list of numbers and map it to one vector, its token. The picture is now just a small stack of vectors, one per patch. This is the step we prototyped first.',
+      vis:function(){return tokSVG({});} },
+    { lab:'Add position', accent:'#3D3AE0', tag:'Section · Position', tagbg:'var(--truth-wash)', tagfg:'#3D3AE0',
+      ttl:'Stamp each token with where it came from', micro:'Data so far: the same vectors, now tagged 1–9.',
+      desc:'A plain stack of vectors has lost all sense of arrangement, the model can no longer tell top from bottom. So we tag every token with its original position. (Skip this and a scrambled image looks identical to the real one, we will prove that later.)',
+      vis:function(){return tokSVG({pos:true});} },
+    { lab:'Attention ×N', accent:'#E2563F', tag:'The core build · Attention', tagbg:'var(--heart-wash)', tagfg:'#E2563F',
+      ttl:'Every patch looks at every other patch', micro:'This is the part that makes it tick.',
+      desc:'Each token looks across all the others, decides who is relevant, and mixes in their information. Repeat the block a few times and a single patch can end up informed by the whole image. Most of this post is spent building exactly this, one operation at a time.',
+      vis:function(){return tokSVG({attn:true, focus:4, links:[1,6,8]});} },
+    { lab:'Classify', accent:'#3D3AE0', tag:'Section · Readout', tagbg:'var(--truth-wash)', tagfg:'#3D3AE0',
+      ttl:'Collapse to a single answer', micro:'Output: a label and a confidence.',
+      desc:'Pool the mixed-up tokens into one summary vector and map it to an answer, the model\u2019s guess about what the image is. That guess, and how confident it is, is the whole point of the machine.',
+      vis:function(){return classifySVG();} }
+  ];
+
+  var strip=root.querySelector('#strip');
+  var cur=0, timer=null;
+
+  function buildStrip(){
+    strip.innerHTML='';
+    STAGES.forEach(function(st,i){
+      var b=document.createElement('button');
+      b.className='stg'; b.type='button';
+      b.innerHTML='<div class="num">'+(i+1)+'</div><div class="lab">'+st.lab+'</div>';
+      b.addEventListener('click',function(){ stop(); select(i); });
+      strip.appendChild(b);
+      if(i<STAGES.length-1){
+        var ch=document.createElement('span'); ch.className='chev'; ch.textContent='▸';
+        strip.appendChild(ch);
+      }
+    });
+  }
+
+  function select(i){
+    cur=i;
+    var st=STAGES[i];
+    Array.prototype.forEach.call(strip.querySelectorAll('.stg'),function(b,bi){
+      var on=bi===i;
+      b.classList.toggle('active',on);
+      b.style.background=on?st.accent:'';
+    });
+    var tag=root.querySelector('#dtag');
+    tag.textContent=st.tag; tag.style.background=st.tagbg; tag.style.color=st.tagfg;
+    root.querySelector('#dttl').textContent=st.ttl;
+    root.querySelector('#ddesc').textContent=st.desc;
+    root.querySelector('#dmicro').textContent=st.micro;
+    root.querySelector('#dvis').innerHTML=st.vis();
+    root.querySelector('#pos').textContent='Stage '+(i+1)+' of '+STAGES.length;
+  }
+
+  function stop(){ if(timer){ clearInterval(timer); timer=null; }
+    root.querySelector('#playIcon').textContent='▶';
+    root.querySelector('#playTxt').textContent='Play the flow';
+  }
+  function play(){
+    if(timer){ stop(); return; }
+    root.querySelector('#playIcon').textContent='❚❚';
+    root.querySelector('#playTxt').textContent='Pause';
+    if(cur>=STAGES.length-1) select(0);
+    timer=setInterval(function(){
+      if(cur>=STAGES.length-1){ stop(); return; }
+      select(cur+1);
+    },1700);
+  }
+  root.querySelector('#play').addEventListener('click',play);
+
+  buildStrip(); select(0);
+})();
+
+</script>
+<script>
+
+(function(){
+  var root=document.getElementById('card-patches');
+  // 0 bg, 1 canopy, 2 trunk
+  var IMG=[[0,0,1,1,0,0],[0,1,1,1,1,0],[1,1,1,1,1,1],[0,0,2,2,0,0],[0,0,2,2,0,0],[0,0,2,2,0,0]];
+  var PAL={0:[255,255,255], 1:[52,168,91], 2:[160,106,63]};
+  var CHCOL=['#E2563F','#34A85B','#3D3AE0'], CHNAME=['Red','Green','Blue'];
+
+  var view='color';   // 'color' | 0 | 1 | 2
+  var mode='see';     // 'see' | 'numbers'  (only used in channel views)
+  var selP=4;         // patch index 0..8, default center
+
+  function rgb(a){ return 'rgb('+a[0]+','+a[1]+','+a[2]+')'; }
+  function patchCells(p){ var pr=Math.floor(p/3), pc=p%3, out=[];
+    for(var r=0;r<2;r++)for(var c=0;c<2;c++) out.push([pr*2+r, pc*2+c]); return out; }
+
+  function mainSVG(){
+    var cs=34, ox=8, oy=8, s='';
+    for(var r=0;r<6;r++)for(var c=0;c<6;c++){
+      var px=ox+c*cs, py=oy+r*cs, val=PAL[IMG[r][c]];
+      if(view==='color'){
+        s+='<rect x="'+px+'" y="'+py+'" width="'+(cs+0.5)+'" height="'+(cs+0.5)+'" fill="'+rgb(val)+'"/>';
+      } else {
+        var v=val[view];
+        if(mode==='see'){
+          // image in this channel only: zero out the other two channels
+          var ch=[0,0,0]; ch[view]=v;
+          s+='<rect x="'+px+'" y="'+py+'" width="'+(cs+0.5)+'" height="'+(cs+0.5)+'" fill="rgb('+ch[0]+','+ch[1]+','+ch[2]+')"/>';
+        } else {
+          s+='<rect x="'+px+'" y="'+py+'" width="'+(cs+0.5)+'" height="'+(cs+0.5)+'" fill="rgb('+v+','+v+','+v+')"/>';
+          s+='<text x="'+(px+cs/2)+'" y="'+(py+cs/2+4)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="11" fill="'+(v<130?'#fff':'#15171E')+'">'+v+'</text>';
+        }
+      }
+    }
+    // patch grid
+    for(var k=1;k<3;k++){
+      s+='<line x1="'+(ox+k*2*cs)+'" y1="'+oy+'" x2="'+(ox+k*2*cs)+'" y2="'+(oy+6*cs)+'" stroke="#3D3AE0" stroke-width="2"/>';
+      s+='<line x1="'+ox+'" y1="'+(oy+k*2*cs)+'" x2="'+(ox+6*cs)+'" y2="'+(oy+k*2*cs)+'" stroke="#3D3AE0" stroke-width="2"/>';
+    }
+    s+='<rect x="'+ox+'" y="'+oy+'" width="'+(6*cs)+'" height="'+(6*cs)+'" fill="none" stroke="#3D3AE0" stroke-width="2"/>';
+    // selected patch highlight
+    var pr=Math.floor(selP/3), pc=selP%3;
+    s+='<rect x="'+(ox+pc*2*cs-1)+'" y="'+(oy+pr*2*cs-1)+'" width="'+(2*cs+2)+'" height="'+(2*cs+2)+'" fill="none" stroke="#E2563F" stroke-width="3"/>';
+    // click targets
+    for(var p=0;p<9;p++){
+      var qr=Math.floor(p/3), qc=p%3;
+      s+='<rect class="phit" data-p="'+p+'" x="'+(ox+qc*2*cs)+'" y="'+(oy+qr*2*cs)+'" width="'+(2*cs)+'" height="'+(2*cs)+'" fill="transparent" style="cursor:pointer"/>';
+    }
+    var M=root.querySelector('#main');
+    M.innerHTML=s;
+    Array.prototype.forEach.call(M.querySelectorAll('.phit'),function(el){
+      el.addEventListener('click',function(){ selP=+this.dataset.p; render(); });
+    });
+    // view label
+    var vl=root.querySelector('#vlabel');
+    if(view==='color'){
+      vl.innerHTML='Showing: <b>full color</b>, three channels mixed together.';
+    } else if(mode==='see'){
+      vl.innerHTML='Showing: the <b>'+CHNAME[view]+' channel</b> as light. Bright = lots of '+CHNAME[view].toLowerCase()+', dark = little. White areas are bright in every channel.';
+    } else {
+      vl.innerHTML='Showing: the <b>'+CHNAME[view]+' channel</b> as raw numbers (0–255), exactly what the network reads.';
+    }
+  }
+
+  function panelSVG(){
+    var cells=patchCells(selP);
+    var vals=cells.map(function(rc){ return PAL[IMG[rc[0]][rc[1]]]; }); // 4 pixels, [r,g,b]
+    var s='', gx=[6,98,190], gy=26, cs=26;
+    for(var ch=0; ch<3; ch++){
+      // label
+      s+='<circle cx="'+(gx[ch]+6)+'" cy="14" r="5" fill="'+CHCOL[ch]+'"/>';
+      s+='<text x="'+(gx[ch]+16)+'" y="18" font-family="Space Mono,monospace" font-size="11" font-weight="700" fill="#15171E">'+CHNAME[ch][0]+'</text>';
+      for(var i=0;i<4;i++){
+        var rr=Math.floor(i/2), cc=i%2, v=vals[i][ch];
+        var x=gx[ch]+cc*cs, y=gy+rr*cs;
+        s+='<rect x="'+x+'" y="'+y+'" width="'+cs+'" height="'+cs+'" fill="rgb('+v+','+v+','+v+')" stroke="#fff" stroke-width="1"/>';
+        s+='<text x="'+(x+cs/2)+'" y="'+(y+cs/2+4)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" fill="'+(v<130?'#fff':'#15171E')+'">'+v+'</text>';
+      }
+    }
+    // equals + color swatch
+    var sx=96, sy=104;
+    s+='<text x="134" y="'+(sy+30)+'" text-anchor="middle" font-family="Space Grotesk" font-size="16" fill="#5A6172">stack &amp; mix &rarr;</text>';
+    for(var i=0;i<4;i++){
+      var rr=Math.floor(i/2), cc=i%2, col=vals[i];
+      s+='<rect x="'+(190+cc*cs)+'" y="'+(sy+rr*cs)+'" width="'+(cs+0.5)+'" height="'+(cs+0.5)+'" fill="'+rgb(col)+'"/>';
+    }
+    s+='<text x="216" y="'+(sy+2*cs+14)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="#5A6172">what you see</text>';
+    root.querySelector('#panel').innerHTML=s;
+
+    root.querySelector('#pcap').innerHTML =
+      'This one patch is <span class="big">4 pixels &times; 3 channels = 12 numbers</span>. The full image is just 36 pixels &times; 3 = 108 of them. No colors, no shapes. Numbers from the very start.';
+  }
+
+  function renderSeg(){
+    Array.prototype.forEach.call(root.querySelectorAll('#seg button'),function(b){
+      var v=b.dataset.v; var active = (v==='color' && view==='color') || (+v===view && view!=='color');
+      b.classList.toggle('on',active);
+      b.style.background = active ? (v==='color' ? '#15171E' : CHCOL[+v]) : '#fff';
+    });
+  }
+  function renderSeg2(){
+    var wrap=root.querySelector('#seg2wrap');
+    wrap.style.display = (view==='color') ? 'none' : 'flex';
+    Array.prototype.forEach.call(root.querySelectorAll('#seg2 button'),function(b){
+      var on = b.dataset.m===mode;
+      b.classList.toggle('on',on);
+      b.style.background = on ? '#15171E' : '#fff';
+    });
+  }
+  function render(){ mainSVG(); panelSVG(); renderSeg(); renderSeg2(); fit(); }
+
+  root.querySelector('#seg').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    view = b.dataset.v==='color' ? 'color' : (+b.dataset.v);
+    render();
+  });
+  root.querySelector('#seg2').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    mode = b.dataset.m;
+    render();
+  });
+
+  var flipped=false, btn=root.querySelector('#flipbtn');
+  function fit(){ var fr=root.querySelector('#frontface'),bk=root.querySelector('#backface'),inr=root.querySelector('#inner'); inr.style.height=(flipped?bk.scrollHeight:fr.scrollHeight)+'px'; }
+  btn.addEventListener('click',function(){ flipped=!flipped; root.querySelector('#inner').classList.toggle('flipped',flipped); btn.querySelector('.lbl').textContent=flipped?'Back to the toy':'Compare to the paper'; fit(); });
+
+  render(); window.addEventListener('load',fit); setTimeout(fit,400);
+})();
+
+</script>
+<script>
+
+(function(){
+  var root=document.getElementById('card-token');
+  var IMG=[[0,0,1,1,0,0],[0,1,1,1,1,0],[1,1,1,1,1,1],[0,0,2,2,0,0],[0,0,2,2,0,0],[0,0,2,2,0,0]];
+  var PAL={0:[255,255,255], 1:[52,168,91], 2:[160,106,63]};
+  var CHCOL=['#E2563F','#34A85B','#3D3AE0'], CHL=['R','G','B'];
+  var CIRC=['\u2460','\u2461','\u2462','\u2463'];
+  var POSS=['T-L','T-R','B-L','B-R'];
+  var selP=4;
+  var revealed={0:false,1:false,2:false};
+  var flipped=false;
+
+  function rgb(a){ return 'rgb('+a[0]+','+a[1]+','+a[2]+')'; }
+  function patchCells(p){ var pr=Math.floor(p/3), pc=p%3, out=[];
+    for(var r=0;r<2;r++)for(var c=0;c<2;c++) out.push([pr*2+r, pc*2+c]); return out; }
+  function pixVals(p){ return patchCells(p).map(function(rc){ return PAL[IMG[rc[0]][rc[1]]]; }); }
+  function chanVals(p,ch){ return pixVals(p).map(function(v){ return v[ch]; }); }
+  function avgCh(p,ch){ var s=chanVals(p,ch).reduce(function(a,b){return a+b;},0); return Math.round(s/4); }
+  function token(p){ return [avgCh(p,1)-avgCh(p,0), avgCh(p,0)-avgCh(p,2)]; }
+  function allDone(){ return revealed[0]&&revealed[1]&&revealed[2]; }
+
+  function imgSVG(){
+    var cs=24, ox=6, oy=6, s='';
+    for(var r=0;r<6;r++)for(var c=0;c<6;c++){
+      s+='<rect x="'+(ox+c*cs)+'" y="'+(oy+r*cs)+'" width="'+(cs+0.5)+'" height="'+(cs+0.5)+'" fill="'+rgb(PAL[IMG[r][c]])+'"/>';
+    }
+    for(var k=1;k<3;k++){
+      s+='<line x1="'+(ox+k*2*cs)+'" y1="'+oy+'" x2="'+(ox+k*2*cs)+'" y2="'+(oy+6*cs)+'" stroke="#3D3AE0" stroke-width="1.6"/>';
+      s+='<line x1="'+ox+'" y1="'+(oy+k*2*cs)+'" x2="'+(ox+6*cs)+'" y2="'+(oy+k*2*cs)+'" stroke="#3D3AE0" stroke-width="1.6"/>';
+    }
+    s+='<rect x="'+ox+'" y="'+oy+'" width="'+(6*cs)+'" height="'+(6*cs)+'" fill="none" stroke="#3D3AE0" stroke-width="1.6"/>';
+    var pr=Math.floor(selP/3), pc=selP%3;
+    s+='<rect x="'+(ox+pc*2*cs-1)+'" y="'+(oy+pr*2*cs-1)+'" width="'+(2*cs+2)+'" height="'+(2*cs+2)+'" fill="none" stroke="#E2563F" stroke-width="3"/>';
+    for(var p=0;p<9;p++){ var qr=Math.floor(p/3), qc=p%3;
+      s+='<rect class="phit" data-p="'+p+'" x="'+(ox+qc*2*cs)+'" y="'+(oy+qr*2*cs)+'" width="'+(2*cs)+'" height="'+(2*cs)+'" fill="transparent" style="cursor:pointer"/>';
+    }
+    var M=root.querySelector('#timg'); M.innerHTML=s;
+    Array.prototype.forEach.call(M.querySelectorAll('.phit'),function(el){
+      el.addEventListener('click',function(){ selP=+this.dataset.p; revealed={0:false,1:false,2:false}; render(); });
+    });
+  }
+
+  function move1SVG(){
+    var vals=pixVals(selP), s='';
+    var cs=44, ox=8, oy=26, cen=[];
+    for(var i=0;i<4;i++){
+      var rr=Math.floor(i/2), cc=i%2, x=ox+cc*cs, y=oy+rr*cs;
+      cen.push([x+cs/2,y+cs/2]);
+      s+='<rect x="'+x+'" y="'+y+'" width="'+(cs+0.5)+'" height="'+(cs+0.5)+'" fill="'+rgb(vals[i])+'" stroke="#fff" stroke-width="1"/>';
+      s+='<circle cx="'+(x+12)+'" cy="'+(y+12)+'" r="9" fill="#15171E"/>';
+      s+='<text x="'+(x+12)+'" y="'+(y+15.5)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="11" font-weight="700" fill="#fff">'+(i+1)+'</text>';
+    }
+    s+='<path d="M'+cen[0][0]+','+cen[0][1]+' L'+cen[1][0]+','+cen[1][1]+' L'+cen[2][0]+','+cen[2][1]+' L'+cen[3][0]+','+cen[3][1]+'" fill="none" stroke="#15171E" stroke-width="1" stroke-dasharray="3 3" opacity="0.45"/>';
+    s+='<text x="'+(ox+cs)+'" y="20" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" fill="#5A6172">reading order</text>';
+    s+='<text x="116" y="74" text-anchor="middle" font-family="Space Grotesk" font-size="22" fill="#5A6172">&rarr;</text>';
+    var x0=140, gw=78, gap=10, cw=26, ch=40, top=40;
+    for(var i=0;i<4;i++){
+      var gx=x0+i*(gw+gap);
+      s+='<circle cx="'+(gx+8)+'" cy="20" r="8" fill="#15171E"/>';
+      s+='<text x="'+(gx+8)+'" y="23.5" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="#fff">'+(i+1)+'</text>';
+      s+='<text x="'+(gx+20)+'" y="24" font-family="Space Mono,monospace" font-size="10" fill="#5A6172">'+POSS[i]+'</text>';
+      s+='<rect x="'+(gx-2)+'" y="'+(top-4)+'" width="'+(gw+4)+'" height="'+(ch+8)+'" rx="6" fill="none" stroke="#E2E5EC" stroke-width="1"/>';
+      for(var c_=0;c_<3;c_++){
+        var x=gx+c_*cw;
+        s+='<rect x="'+x+'" y="'+top+'" width="'+(cw-2)+'" height="'+ch+'" rx="3" fill="'+CHCOL[c_]+'" fill-opacity="0.12" stroke="'+CHCOL[c_]+'" stroke-opacity="0.5"/>';
+        s+='<text x="'+(x+(cw-2)/2)+'" y="'+(top+13)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="'+CHCOL[c_]+'">'+CHL[c_]+'</text>';
+        s+='<text x="'+(x+(cw-2)/2)+'" y="'+(top+32)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="11" font-weight="700" fill="#15171E">'+vals[i][c_]+'</text>';
+      }
+    }
+    root.querySelector('#flat').innerHTML=s;
+  }
+
+  function embedHTML(){
+    var h='';
+    for(var ch=0; ch<3; ch++){
+      var vals=chanVals(selP,ch), sum=vals.reduce(function(a,b){return a+b;},0), av=avgCh(selP,ch);
+      h+='<div class="avgrow"><span class="chl" style="color:'+CHCOL[ch]+'">avg('+CHL[ch]+')</span>';
+      for(var i=0;i<4;i++){
+        h+='<span class="add"><span class="pn">'+CIRC[i]+'</span><b>'+vals[i]+'</b></span>'+(i<3?'<span>+</span>':'');
+      }
+      if(revealed[ch]){
+        h+='<span>=</span><span class="res">'+sum+'</span><span>&divide; 4 =</span><span class="res"><span class="avgv">'+av+'</span></span>';
+      } else {
+        h+='<span>=</span><button class="calcbtn" data-ch="'+ch+'">Average &rarr;</button>';
+      }
+      h+='</div>';
+    }
+    if(!allDone()){ h+='<div style="margin-top:4px"><span class="showall" id="showall">show all three</span></div>'; }
+    if(allDone()){
+      var a0=avgCh(selP,0), a1=avgCh(selP,1), a2=avgCh(selP,2), t=token(selP);
+      h+='<div class="det open">';
+      h+='<div class="erow"><span class="ename" style="color:var(--green)">greenness e&#8321;</span> = avg(G) &minus; avg(R) = '+a1+' &minus; '+a0+' = <span class="out" style="background:#E7F4EC;color:var(--green)">'+t[0]+'</span></div>';
+      h+='<div class="erow"><span class="ename" style="color:var(--red)">redness e&#8322;</span> = avg(R) &minus; avg(B) = '+a0+' &minus; '+a2+' = <span class="out" style="background:#FBEAE6;color:var(--red)">'+t[1]+'</span></div>';
+      h+='<div class="token">token = ( <span class="tv">'+t[0]+'</span> , <span class="tv">'+t[1]+'</span> )</div>';
+      h+='</div>';
+    } else {
+      h+='<div class="det locked">Work out all three averages to assemble the token &rarr;</div>';
+    }
+    var E=root.querySelector('#embed'); E.innerHTML=h;
+    Array.prototype.forEach.call(E.querySelectorAll('.calcbtn'),function(b){
+      b.addEventListener('click',function(){ revealed[+this.dataset.ch]=true; render(); });
+    });
+    var sa=E.querySelector('#showall');
+    if(sa) sa.addEventListener('click',function(){ revealed={0:true,1:true,2:true}; render(); });
+  }
+
+  function planeSVG(){
+    var W=700,H=250, padL=54, padR=24, padT=18, padB=40;
+    var x0=-70,x1=130, y0=-50,y1=110;
+    function X(e){ return padL + (e-x0)/(x1-x0)*(W-padL-padR); }
+    function Y(e){ return padT + (y1-e)/(y1-y0)*(H-padT-padB); }
+    var s='';
+    s+='<line x1="'+padL+'" y1="'+Y(0)+'" x2="'+(W-padR)+'" y2="'+Y(0)+'" stroke="#D5D8E0" stroke-width="1.2"/>';
+    s+='<line x1="'+X(0)+'" y1="'+padT+'" x2="'+X(0)+'" y2="'+(H-padB)+'" stroke="#D5D8E0" stroke-width="1.2"/>';
+    s+='<text x="'+(W-padR)+'" y="'+(Y(0)+15)+'" text-anchor="end" font-family="Space Mono,monospace" font-size="10" fill="#1F8A4C">e&#8321; greenness &rarr;</text>';
+    s+='<text x="'+(X(0)+6)+'" y="'+(padT+10)+'" font-family="Space Mono,monospace" font-size="10" fill="#C0432F">&uarr; e&#8322; redness</text>';
+    s+='<text x="'+X(95)+'" y="'+Y(-44)+'" text-anchor="middle" font-family="Space Grotesk" font-size="11" fill="#9aa0ad">greens</text>';
+    s+='<text x="'+X(-50)+'" y="'+Y(100)+'" text-anchor="middle" font-family="Space Grotesk" font-size="11" fill="#9aa0ad">trunk</text>';
+    s+='<text x="'+X(2)+'" y="'+Y(-12)+'" font-family="Space Grotesk" font-size="11" fill="#9aa0ad">blank</text>';
+    for(var p=0;p<9;p++){
+      var t=token(p), col=pixVals(p).reduce(function(a,v){return [a[0]+v[0],a[1]+v[1],a[2]+v[2]];},[0,0,0]).map(function(z){return Math.round(z/4);});
+      var x=X(t[0]), y=Y(t[1]), sel=p===selP;
+      if(sel) s+='<circle cx="'+x+'" cy="'+y+'" r="11" fill="none" stroke="#E2563F" stroke-width="2.5"/>';
+      s+='<circle cx="'+x+'" cy="'+y+'" r="6.5" fill="'+rgb(col)+'" stroke="#15171E" stroke-width="1"/>';
+    }
+    var ts=token(selP), xs=X(ts[0]), ys=Y(ts[1]);
+    if(allDone()){
+      s+='<text x="'+(xs+15)+'" y="'+(ys+4)+'" font-family="Space Mono,monospace" font-size="11" font-weight="700" fill="#E2563F">('+ts[0]+', '+ts[1]+')</text>';
+    } else {
+      s+='<text x="'+(xs+15)+'" y="'+(ys+4)+'" font-family="Space Mono,monospace" font-size="11" fill="#b6bac4">compute it &uarr;</text>';
+    }
+    root.querySelector('#plane').innerHTML=s;
+  }
+
+  function fit(){
+    var fr=root.querySelector('#frontface'), bk=root.querySelector('#backface'), inr=root.querySelector('#inner');
+    inr.style.height=(flipped?bk.scrollHeight:fr.scrollHeight)+'px';
+  }
+
+  function render(){
+    imgSVG(); move1SVG(); embedHTML(); planeSVG();
+    root.querySelector('#tcap').innerHTML =
+      'Each dot is one patch, colored by its own average. <b>The greens line up together, the brown trunk sits off on its own, and the blank patches pile at the origin</b>: similar patches get similar tokens. That &ldquo;similar lands near&rdquo; property is exactly the hook the attention stage will pull on.';
+    fit();
+  }
+
+  // flip
+  var btn=root.querySelector('#flipbtn');
+  btn.addEventListener('click',function(){
+    flipped=!flipped;
+    root.querySelector('#inner').classList.toggle('flipped',flipped);
+    btn.querySelector('.lbl').textContent = flipped ? 'Back to the toy' : 'Compare to the paper';
+    fit();
+  });
+
+  render();
+  window.addEventListener('load', fit);
+  setTimeout(fit, 400);
+})();
+
+</script>
+<script>
+
+(function(){
+  var root=document.getElementById('card-position');
+  var IMG=[[0,0,1,1,0,0],[0,1,1,1,1,0],[1,1,1,1,1,1],[0,0,2,2,0,0],[0,0,2,2,0,0],[0,0,2,2,0,0]];
+  var PAL={0:[255,255,255], 1:[52,168,91], 2:[160,106,63]};
+  function rgb(a){ return 'rgb('+a[0]+','+a[1]+','+a[2]+')'; }
+  function cells(i){ var pr=Math.floor(i/3), pc=i%3, o=[]; for(var r=0;r<2;r++)for(var c=0;c<2;c++)o.push([pr*2+r,pc*2+c]); return o; }
+  var TYPES=[], TOKEN=[], AVG=[];
+  for(var i=0;i<9;i++){
+    var cc=cells(i), t=[], R=0,G=0,B=0;
+    cc.forEach(function(rc){ var ty=IMG[rc[0]][rc[1]]; t.push(ty); var v=PAL[ty]; R+=v[0];G+=v[1];B+=v[2]; });
+    TYPES.push(t); AVG.push([Math.round(R/4),Math.round(G/4),Math.round(B/4)]);
+    var a=AVG[i]; TOKEN.push([a[1]-a[0], a[0]-a[2]]);
+  }
+  var A=28;
+  function angleDeg(p){ return p*40; }
+  function sc(p){ var r=2*Math.PI*p/9; return [Math.sin(r), Math.cos(r)]; }
+  function code(p){ var v=sc(p); return [Math.round(A*v[0]), Math.round(A*v[1])]; }
+
+  var order=[0,1,2,3,4,5,6,7,8];
+  var posOn=false, shufCount=0, selP=6;
+
+  function content(p){ return TOKEN[order[p]]; }
+  function finalVec(p){ var b=content(p); if(!posOn) return [b[0],b[1]]; var c=code(p); return [b[0]+c[0], b[1]+c[1]]; }
+
+  function imgSVG(){
+    var cs=22, ox=6, oy=6, s='';
+    for(var p=0;p<9;p++){
+      var pr=Math.floor(p/3), pc=p%3, t=TYPES[order[p]];
+      for(var k=0;k<4;k++){ var rr=Math.floor(k/2), ck=k%2;
+        var x=ox+(pc*2+ck)*cs, y=oy+(pr*2+rr)*cs;
+        s+='<rect x="'+x+'" y="'+y+'" width="'+(cs+0.5)+'" height="'+(cs+0.5)+'" fill="'+rgb(PAL[t[k]])+'"/>';
+      }
+    }
+    for(var k=1;k<3;k++){
+      s+='<line x1="'+(ox+k*2*cs)+'" y1="'+oy+'" x2="'+(ox+k*2*cs)+'" y2="'+(oy+6*cs)+'" stroke="#3D3AE0" stroke-width="1.4"/>';
+      s+='<line x1="'+ox+'" y1="'+(oy+k*2*cs)+'" x2="'+(ox+6*cs)+'" y2="'+(oy+k*2*cs)+'" stroke="#3D3AE0" stroke-width="1.4"/>';
+    }
+    s+='<rect x="'+ox+'" y="'+oy+'" width="'+(6*cs)+'" height="'+(6*cs)+'" fill="none" stroke="#3D3AE0" stroke-width="1.4"/>';
+    var spr=Math.floor(selP/3), spc=selP%3;
+    s+='<rect x="'+(ox+spc*2*cs-1)+'" y="'+(oy+spr*2*cs-1)+'" width="'+(2*cs+2)+'" height="'+(2*cs+2)+'" fill="none" stroke="#E2563F" stroke-width="3"/>';
+    for(var p=0;p<9;p++){ var pr=Math.floor(p/3), pc=p%3;
+      s+='<text x="'+(ox+pc*2*cs+4)+'" y="'+(oy+pr*2*cs+12)+'" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#15171E" opacity="0.55">'+p+'</text>';
+      s+='<rect class="hit" data-p="'+p+'" x="'+(ox+pc*2*cs)+'" y="'+(oy+pr*2*cs)+'" width="'+(2*cs)+'" height="'+(2*cs)+'" fill="transparent" style="cursor:pointer"/>';
+    }
+    var M=root.querySelector('#pimg'); M.innerHTML=s;
+    Array.prototype.forEach.call(M.querySelectorAll('.hit'),function(el){ el.addEventListener('click',function(){ selP=+this.dataset.p; render(); }); });
+  }
+
+  function planeSVG(){
+    var W=470,H=240, padL=40, padR=18, padT=16, padB=30;
+    var x0=-95,x1=155, y0=-80,y1=135;
+    function X(e){ return padL+(e-x0)/(x1-x0)*(W-padL-padR); }
+    function Y(e){ return padT+(y1-e)/(y1-y0)*(H-padT-padB); }
+    var s='';
+    s+='<line x1="'+padL+'" y1="'+Y(0)+'" x2="'+(W-padR)+'" y2="'+Y(0)+'" stroke="#E2E5EC" stroke-width="1"/>';
+    s+='<line x1="'+X(0)+'" y1="'+padT+'" x2="'+X(0)+'" y2="'+(H-padB)+'" stroke="#E2E5EC" stroke-width="1"/>';
+    var groups={};
+    for(var p=0;p<9;p++){ var v=finalVec(p); var key=Math.round(v[0])+','+Math.round(v[1]);
+      if(!groups[key]) groups[key]={x:v[0],y:v[1],items:[]}; groups[key].items.push(p); }
+    // offset arrow for selected (position on)
+    if(posOn){ var cb=content(selP), fv=finalVec(selP);
+      s+='<line x1="'+X(cb[0])+'" y1="'+Y(cb[1])+'" x2="'+X(fv[0])+'" y2="'+Y(fv[1])+'" stroke="#1F9E8F" stroke-width="1.6" stroke-dasharray="3 2"/>';
+      s+='<circle cx="'+X(cb[0])+'" cy="'+Y(cb[1])+'" r="3" fill="none" stroke="#1F9E8F" stroke-width="1.4"/>';
+    }
+    Object.keys(groups).forEach(function(k){
+      var g=groups[k], x=X(g.x), y=Y(g.y), col=AVG[order[g.items[0]]], sel=g.items.indexOf(selP)>=0;
+      if(sel) s+='<circle cx="'+x+'" cy="'+y+'" r="11" fill="none" stroke="#E2563F" stroke-width="2.5"/>';
+      s+='<circle cx="'+x+'" cy="'+y+'" r="7" fill="'+rgb(col)+'" stroke="#15171E" stroke-width="1"/>';
+      if(g.items.length>1){
+        s+='<circle cx="'+(x+8)+'" cy="'+(y-8)+'" r="7.5" fill="#E2563F"/>';
+        s+='<text x="'+(x+8)+'" y="'+(y-4.5)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#fff">'+g.items.length+'</text>';
+      }
+    });
+    root.querySelector('#pplane').innerHTML=s;
+  }
+
+  function ringSVG(){
+    var cx=72, cy=80, r=46, s='', active=posOn;
+    var axc=active?'#cdd2db':'#E8EAEF';
+    s+='<line x1="'+(cx-r-8)+'" y1="'+cy+'" x2="'+(cx+r+8)+'" y2="'+cy+'" stroke="'+axc+'" stroke-width="1"/>';
+    s+='<line x1="'+cx+'" y1="'+(cy-r-8)+'" x2="'+cx+'" y2="'+(cy+r+8)+'" stroke="'+axc+'" stroke-width="1"/>';
+    s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+(active?'#1F9E8F':'#E2E5EC')+'" stroke-width="1.3"/>';
+    for(var p=0;p<9;p++){ var v=sc(p); var x=cx+v[0]*r, y=cy-v[1]*r;
+      var on=active && (p===selP);
+      s+='<circle cx="'+x+'" cy="'+y+'" r="'+(on?6.5:4.5)+'" fill="'+(on?'#E2563F':(active?'#1F9E8F':'#fff'))+'" stroke="'+(on?'#E2563F':(active?'#1F9E8F':'#cfd3db'))+'" stroke-width="1.4"/>';
+      if(on){
+        // projections to axes show sin (x) and cos (y)
+        s+='<line x1="'+x+'" y1="'+y+'" x2="'+x+'" y2="'+cy+'" stroke="#E2563F" stroke-width="1" stroke-dasharray="2 2" opacity="0.7"/>';
+        s+='<line x1="'+x+'" y1="'+y+'" x2="'+cx+'" y2="'+y+'" stroke="#E2563F" stroke-width="1" stroke-dasharray="2 2" opacity="0.7"/>';
+        s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+x+'" y2="'+y+'" stroke="#E2563F" stroke-width="1.4"/>';
+        s+='<text x="'+((cx+x)/2)+'" y="'+(cy+11)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="#E2563F">sin</text>';
+        s+='<text x="'+(cx-12)+'" y="'+((cy+y)/2)+'" text-anchor="end" font-family="Space Mono,monospace" font-size="8" fill="#E2563F">cos</text>';
+      }
+      s+='<text x="'+(cx+v[0]*(r+11))+'" y="'+(cy-v[1]*(r+11)+3)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" font-weight="700" fill="'+(on?'#E2563F':'#9aa0ad')+'">'+p+'</text>';
+    }
+    root.querySelector('#pring').innerHTML=s;
+  }
+
+  function pcalc(){
+    var b=content(selP);
+    var h='';
+    if(!posOn){
+      h+='<div class="off">Turn on &ldquo;add sinusoidal&rdquo; to give this slot a position code and watch it move.</div>';
+      h+='<div class="step">Slot <b>p = '+selP+'</b> &middot; <span class="z">Z = ('+b[0]+', '+b[1]+')</span></div>';
+    } else {
+      var v=sc(selP), c=code(selP), f=[b[0]+c[0], b[1]+c[1]];
+      h+='<div class="step">Slot <b>p = '+selP+'</b> &rarr; angle = p &times; 40&deg; = <b>'+angleDeg(selP)+'&deg;</b></div>';
+      h+='<div class="step">read off the circle: (sin, cos) = (<b>'+v[0].toFixed(2)+'</b>, <b>'+v[1].toFixed(2)+'</b>)</div>';
+      h+='<div class="step">code = 28 &times; (sin, cos) = (<b>'+c[0]+'</b>, <b>'+c[1]+'</b>)</div>';
+      h+='<div class="step"><span class="z">Z ('+b[0]+', '+b[1]+')</span> + code = <span class="fin">('+f[0]+', '+f[1]+')</span></div>';
+    }
+    root.querySelector('#pcalc').innerHTML=h;
+  }
+
+  function renderSeg(){
+    Array.prototype.forEach.call(root.querySelectorAll('#seg button'),function(b){
+      var on=(b.dataset.v==='on')===posOn; b.classList.toggle('on',on);
+      b.style.background = on ? (posOn?'#1F9E8F':'#15171E') : '#fff';
+    });
+  }
+
+  function caption(){
+    if(!posOn){
+      return 'Pure content: the patches are just a <b>set of Z\u2019s</b>, and identical-looking patches sit on the very same point (<span class="hot">&times;2</span>). '+
+        (shufCount>0 ? 'You\u2019ve shuffled '+shufCount+'&times; and the points <b>never moved</b>. Every shuffle gives the same set of Z\u2019s, so the model sees no difference.'
+                     : 'Press <b>Shuffle</b>: the tree scrambles but this set won\u2019t budge.');
+    }
+    return 'Each slot adds its <span style="color:#1F9E8F;font-weight:600">sinusoidal code</span> (worked out below). Select a patch to see its distance from its previous position in the token plane, the shift added by its position code.';
+  }
+
+  function fit(){ var fr=root.querySelector('#frontface'), bk=root.querySelector('#backface'), inr=root.querySelector('#inner');
+    inr.style.height=(flipped?bk.scrollHeight:fr.scrollHeight)+'px'; }
+
+  function render(){ imgSVG(); planeSVG(); ringSVG(); pcalc(); renderSeg(); root.querySelector('#pcap').innerHTML=caption(); fit(); }
+
+  root.querySelector('#seg').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return; posOn=(b.dataset.v==='on'); render(); });
+  root.querySelector('#shuf').addEventListener('click',function(){
+    for(var i=order.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=order[i]; order[i]=order[j]; order[j]=t; }
+    shufCount++; render();
+  });
+  root.querySelector('#reset').addEventListener('click',function(){ order=[0,1,2,3,4,5,6,7,8]; shufCount=0; render(); });
+
+  var flipped=false, btn=root.querySelector('#flipbtn');
+  btn.addEventListener('click',function(){ flipped=!flipped; root.querySelector('#inner').classList.toggle('flipped',flipped);
+    btn.querySelector('.lbl').textContent = flipped?'Back to the toy':'Compare to the paper'; fit(); });
+
+  render();
+  window.addEventListener('load', fit);
+  setTimeout(fit, 400);
+})();
+
+</script>
+<script>
+
+(function(){
+  var root=document.getElementById('card-attn-setup');
+  var IMG=[[0,0,1,1,0,0],[0,1,1,1,1,0],[1,1,1,1,1,1],[0,0,2,2,0,0],[0,0,2,2,0,0],[0,0,2,2,0,0]];
+  var PAL={0:[255,255,255],1:[52,168,91],2:[160,106,63]};
+  function rgb(a){ return 'rgb('+a[0]+','+a[1]+','+a[2]+')'; }
+  function cells(i){ var pr=Math.floor(i/3),pc=i%3,o=[]; for(var r=0;r<2;r++)for(var c=0;c<2;c++)o.push([pr*2+r,pc*2+c]); return o; }
+  var TYPES=[],AVG=[];
+  for(var i=0;i<9;i++){ var cc=cells(i),t=[],R=0,G=0,B=0;
+    cc.forEach(function(rc){ var ty=IMG[rc[0]][rc[1]]; t.push(ty); var v=PAL[ty]; R+=v[0];G+=v[1];B+=v[2]; });
+    TYPES.push(t); AVG.push([Math.round(R/4),Math.round(G/4),Math.round(B/4)]); }
+
+  var asker=1, step=1;
+  // representative "others" shown in the round diagram + an illustrative relevance (not the real rule yet)
+  var others=[ {p:7,lab:'trunk', rel:.50}, {p:3,lab:'green', rel:.26}, {p:4,lab:'centre', rel:.16}, {p:6,lab:'blank', rel:.08} ];
+
+  function imgSVG(){
+    var cs=22,ox=6,oy=6,s='';
+    for(var p=0;p<9;p++){ var pr=Math.floor(p/3),pc=p%3,t=TYPES[p];
+      for(var k=0;k<4;k++){ var rr=Math.floor(k/2),ck=k%2; var x=ox+(pc*2+ck)*cs,y=oy+(pr*2+rr)*cs;
+        s+='<rect x="'+x+'" y="'+y+'" width="'+(cs+0.5)+'" height="'+(cs+0.5)+'" fill="'+rgb(PAL[t[k]])+'"/>'; } }
+    for(var k=1;k<3;k++){
+      s+='<line x1="'+(ox+k*2*cs)+'" y1="'+oy+'" x2="'+(ox+k*2*cs)+'" y2="'+(oy+6*cs)+'" stroke="#3D3AE0" stroke-width="1.4"/>';
+      s+='<line x1="'+ox+'" y1="'+(oy+k*2*cs)+'" x2="'+(ox+6*cs)+'" y2="'+(oy+k*2*cs)+'" stroke="#3D3AE0" stroke-width="1.4"/>'; }
+    s+='<rect x="'+ox+'" y="'+oy+'" width="'+(6*cs)+'" height="'+(6*cs)+'" fill="none" stroke="#3D3AE0" stroke-width="1.4"/>';
+    var qr=Math.floor(asker/3),qc=asker%3;
+    s+='<rect x="'+(ox+qc*2*cs-1)+'" y="'+(oy+qr*2*cs-1)+'" width="'+(2*cs+2)+'" height="'+(2*cs+2)+'" fill="none" stroke="#E2563F" stroke-width="3"/>';
+    for(var p=0;p<9;p++){ var pr=Math.floor(p/3),pc=p%3;
+      s+='<rect class="hit" data-p="'+p+'" x="'+(ox+pc*2*cs)+'" y="'+(oy+pr*2*cs)+'" width="'+(2*cs)+'" height="'+(2*cs)+'" fill="transparent" style="cursor:pointer"/>'; }
+    var M=root.querySelector('#pimg'); M.innerHTML=s;
+    Array.prototype.forEach.call(M.querySelectorAll('.hit'),function(el){ el.addEventListener('click',function(){ asker=+this.dataset.p; render(); }); });
+  }
+
+  function roundSVG(){
+    var s='', ax=78, ay=125;
+    // others column
+    var oys=[42,103,164,214];
+    // step 2+: connecting lines
+    if(step>=2){ for(var i=0;i<others.length;i++){ var o=others[i],oy=oys[i];
+      s+='<line x1="'+(ax+24)+'" y1="'+ay+'" x2="'+(316-22)+'" y2="'+oy+'" stroke="#1F9E8F" stroke-width="'+(1.2+9*o.rel)+'" opacity="'+(0.25+0.7*o.rel)+'" stroke-linecap="round"/>'; } }
+    // step 3: value arrowheads flowing back
+    if(step>=3){ for(var i=0;i<others.length;i++){ var o=others[i],oy=oys[i];
+      var mx=(ax+24+316-22)/2, my=(ay+oy)/2;
+      s+='<polygon points="'+(mx)+','+(my)+' '+(mx+9)+','+(my-5)+' '+(mx+9)+','+(my+5)+'" fill="#E2563F" opacity="'+(0.3+0.7*o.rel)+'" transform="rotate('+(Math.atan2(ay-oy,(ax+24)-(316-22))*180/Math.PI)+' '+mx+' '+my+')"/>'; } }
+    // asker node
+    var glow = step>=3 ? '<circle cx="'+ax+'" cy="'+ay+'" r="33" fill="none" stroke="#E2563F" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>' : '';
+    s+=glow;
+    s+='<circle cx="'+ax+'" cy="'+ay+'" r="24" fill="'+rgb(AVG[asker])+'" stroke="#E2563F" stroke-width="2.5"/>';
+    s+='<text x="'+ax+'" y="'+(ay+38)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" fill="#5A6172">asker</text>';
+    // Q badge
+    if(step>=1){ s+='<circle cx="'+(ax+22)+'" cy="'+(ay-22)+'" r="11" fill="#3D3AE0"/>'+
+      '<text x="'+(ax+22)+'" y="'+(ay-18)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="11" font-weight="700" fill="#fff">Q</text>'; }
+    // others nodes
+    for(var i=0;i<others.length;i++){ var o=others[i],oy=oys[i];
+      s+='<circle cx="316" cy="'+oy+'" r="17" fill="'+rgb(AVG[o.p])+'" stroke="#15171E" stroke-width="1"/>';
+      s+='<text x="344" y="'+(oy+4)+'" font-family="Space Mono,monospace" font-size="10" fill="#5A6172">'+o.lab+'</text>';
+      if(step>=2){ s+='<circle cx="298" cy="'+(oy-15)+'" r="9" fill="#1F9E8F"/>'+
+        '<text x="298" y="'+(oy-11)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#fff">K</text>'; }
+      if(step>=3){ s+='<circle cx="298" cy="'+(oy+15)+'" r="9" fill="#E2563F"/>'+
+        '<text x="298" y="'+(oy+19)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#fff">V</text>'; }
+    }
+    root.querySelector('#round').innerHTML=s;
+  }
+
+  function defHTML(){
+    if(step===1) return '<span class="term q">QUERY · Q</span><p>The asker broadcasts a question: <span class="ask">&ldquo;what kind of patch would help me know what I am?&rdquo;</span> That question is the <b>Query</b>. Every patch makes one. A bit like a kid asking <i>&ldquo;who am I?&rdquo;</i> and society replying, <i>&ldquo;here&rsquo;s what you look similar to.&rdquo;</i></p>';
+    if(step===2) return '<span class="term k">KEY · K</span> &nbsp;&amp;&nbsp; <span class="term q">SCORE</span><p>Every other patch holds up a <b>Key</b>, its answer to <span class="ask">&ldquo;here&rsquo;s what I am.&rdquo;</span> The <b>score</b> is how well the query lines up with each key (thicker line = better match). <i>How</i> that score is computed is the next two cards&rsquo; whole job.</p>';
+    return '<span class="term v">VALUE · V</span> &nbsp;&amp;&nbsp; <span class="term v">BLEND</span><p>The best-matched patches send back their <b>Value</b>, their content, and the asker is <b>rewritten as the weighted blend</b>. It is no longer just &ldquo;green&rdquo;; it now carries a little of whatever it attended to.</p>';
+  }
+
+  function renderSteps(){ Array.prototype.forEach.call(root.querySelectorAll('#steps button'),function(b){ b.classList.toggle('on', +b.dataset.s===step); }); }
+
+  var flipped=false;
+  function fit(){ var fr=root.querySelector('#frontface'),bk=root.querySelector('#backface'),inr=root.querySelector('#inner'); inr.style.height=(flipped?bk.scrollHeight:fr.scrollHeight)+'px'; }
+  function render(){ imgSVG(); roundSVG(); root.querySelector('#defbox').innerHTML=defHTML(); renderSteps(); fit(); }
+
+  root.querySelector('#steps').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return; step=+b.dataset.s; render(); });
+  var btn=root.querySelector('#flipbtn');
+  btn.addEventListener('click',function(){ flipped=!flipped; root.querySelector('#inner').classList.toggle('flipped',flipped); btn.querySelector('.lbl').textContent=flipped?'Back to the toy':'Compare to the paper'; fit(); });
+
+  render(); window.addEventListener('load',fit); setTimeout(fit,400);
+})();
+
+</script>
+<script>
+
+(function(){
+  var root=document.getElementById('card-attn-match');
+  var IMG=[[0,0,1,1,0,0],[0,1,1,1,1,0],[1,1,1,1,1,1],[0,0,2,2,0,0],[0,0,2,2,0,0],[0,0,2,2,0,0]];
+  var PAL={0:[255,255,255],1:[52,168,91],2:[160,106,63]};
+  function rgb(a){ return 'rgb('+a[0]+','+a[1]+','+a[2]+')'; }
+  function cells(i){ var pr=Math.floor(i/3),pc=i%3,o=[]; for(var r=0;r<2;r++)for(var c=0;c<2;c++)o.push([pr*2+r,pc*2+c]); return o; }
+  var TYPES=[],AVG=[],TOKEN=[];
+  for(var i=0;i<9;i++){ var cc=cells(i),t=[],R=0,G=0,B=0;
+    cc.forEach(function(rc){ var ty=IMG[rc[0]][rc[1]]; t.push(ty); var v=PAL[ty]; R+=v[0];G+=v[1];B+=v[2]; });
+    TYPES.push(t); AVG.push([Math.round(R/4),Math.round(G/4),Math.round(B/4)]);
+    var a=AVG[i]; TOKEN.push([a[1]-a[0],a[0]-a[2]]); }
+
+  var q=1, insK=3, blendT=0, anim=null;
+  var r1=false,r2=false,rs=false; // DIY reveal state
+
+  function score(p){ var Q=TOKEN[q],K=TOKEN[p]; return Q[0]*K[0]+Q[1]*K[1]; }
+  function weights(){ var sc=[],mx=0; for(var p=0;p<9;p++){ sc.push(score(p)); mx=Math.max(mx,Math.abs(sc[p])); }
+    var w=[],sum=0,T=2.5; if(mx<1e-9){ for(var p=0;p<9;p++) w.push(1/9); return w; }
+    for(var p=0;p<9;p++){ var e=Math.exp(T*sc[p]/mx); w.push(e); sum+=e; } for(var p=0;p<9;p++) w[p]/=sum; return w; }
+  function blended(W){ var x=0,y=0; for(var p=0;p<9;p++){ x+=W[p]*TOKEN[p][0]; y+=W[p]*TOKEN[p][1]; } return [x,y]; }
+  function topNonSelf(){ var W=weights(),b=-1,bv=-1; for(var p=0;p<9;p++){ if(p===q)continue; if(W[p]>bv){bv=W[p];b=p;} } return b; }
+  function resetDIY(){ r1=r2=rs=false; }
+
+  function imgSVG(){
+    var cs=22,ox=6,oy=6,s='';
+    for(var p=0;p<9;p++){ var pr=Math.floor(p/3),pc=p%3,t=TYPES[p];
+      for(var k=0;k<4;k++){ var rr=Math.floor(k/2),ck=k%2; var x=ox+(pc*2+ck)*cs,y=oy+(pr*2+rr)*cs;
+        s+='<rect x="'+x+'" y="'+y+'" width="'+(cs+0.5)+'" height="'+(cs+0.5)+'" fill="'+rgb(PAL[t[k]])+'"/>'; } }
+    for(var k=1;k<3;k++){
+      s+='<line x1="'+(ox+k*2*cs)+'" y1="'+oy+'" x2="'+(ox+k*2*cs)+'" y2="'+(oy+6*cs)+'" stroke="#3D3AE0" stroke-width="1.4"/>';
+      s+='<line x1="'+ox+'" y1="'+(oy+k*2*cs)+'" x2="'+(ox+6*cs)+'" y2="'+(oy+k*2*cs)+'" stroke="#3D3AE0" stroke-width="1.4"/>'; }
+    s+='<rect x="'+ox+'" y="'+oy+'" width="'+(6*cs)+'" height="'+(6*cs)+'" fill="none" stroke="#3D3AE0" stroke-width="1.4"/>';
+    var qr=Math.floor(q/3),qc=q%3;
+    s+='<rect x="'+(ox+qc*2*cs-1)+'" y="'+(oy+qr*2*cs-1)+'" width="'+(2*cs+2)+'" height="'+(2*cs+2)+'" fill="none" stroke="#E2563F" stroke-width="3"/>';
+    for(var p=0;p<9;p++){ var pr=Math.floor(p/3),pc=p%3;
+      s+='<text x="'+(ox+pc*2*cs+4)+'" y="'+(oy+pr*2*cs+12)+'" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#15171E" opacity="0.55">'+p+'</text>';
+      s+='<rect class="hit" data-p="'+p+'" x="'+(ox+pc*2*cs)+'" y="'+(oy+pr*2*cs)+'" width="'+(2*cs)+'" height="'+(2*cs)+'" fill="transparent" style="cursor:pointer"/>'; }
+    var M=root.querySelector('#pimg'); M.innerHTML=s;
+    Array.prototype.forEach.call(M.querySelectorAll('.hit'),function(el){ el.addEventListener('click',function(){ q=+this.dataset.p; stopAnim(); blendT=0; insK=topNonSelf(); resetDIY(); render(); }); });
+  }
+
+  function planeSVG(W){
+    var Wd=470,H=250,padL=42,padR=16,padT=14,padB=28, x0=-75,x1=135,y0=-60,y1=115;
+    function X(e){ return padL+(e-x0)/(x1-x0)*(Wd-padL-padR); }
+    function Y(e){ return padT+(y1-e)/(y1-y0)*(H-padT-padB); }
+    var s='';
+    s+='<line x1="'+padL+'" y1="'+Y(0)+'" x2="'+(Wd-padR)+'" y2="'+Y(0)+'" stroke="#E2E5EC"/>';
+    s+='<line x1="'+X(0)+'" y1="'+padT+'" x2="'+X(0)+'" y2="'+(H-padB)+'" stroke="#E2E5EC"/>';
+    var qx=TOKEN[q][0],qy=TOKEN[q][1],aop=1-0.55*blendT;
+    for(var p=0;p<9;p++){ if(p===q)continue; var wv=W[p]; if(wv<0.02)continue;
+      s+='<line x1="'+X(qx)+'" y1="'+Y(qy)+'" x2="'+X(TOKEN[p][0])+'" y2="'+Y(TOKEN[p][1])+'" stroke="#1F9E8F" stroke-width="'+(1+9*wv)+'" opacity="'+(aop*(0.2+0.8*Math.min(1,wv*2.2)))+'" stroke-linecap="round"/>'; }
+    var groups={};
+    for(var p=0;p<9;p++){ var k=TOKEN[p][0]+','+TOKEN[p][1]; if(!groups[k])groups[k]={x:TOKEN[p][0],y:TOKEN[p][1],items:[]}; groups[k].items.push(p); }
+    Object.keys(groups).forEach(function(k){ var g=groups[k],x=X(g.x),y=Y(g.y),col=AVG[g.items[0]],isq=g.items.indexOf(q)>=0,isk=g.items.indexOf(insK)>=0;
+      if(isk&&!isq) s+='<circle cx="'+x+'" cy="'+y+'" r="11" fill="none" stroke="#E2563F" stroke-width="1.6" stroke-dasharray="3 2"/>';
+      s+='<circle cx="'+x+'" cy="'+y+'" r="7" fill="'+rgb(col)+'" stroke="#15171E" stroke-width="1" opacity="'+(isq?0.4:1)+'"/>';
+      if(g.items.length>1) s+='<text x="'+(x+9)+'" y="'+(y-7)+'" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#E2563F">&times;'+g.items.length+'</text>';
+    });
+    var nb=blended(W),cx=qx+(nb[0]-qx)*blendT,cy=qy+(nb[1]-qy)*blendT;
+    if(blendT>0) s+='<line x1="'+X(qx)+'" y1="'+Y(qy)+'" x2="'+X(cx)+'" y2="'+Y(cy)+'" stroke="#E2563F" stroke-width="1.3" stroke-dasharray="3 2" opacity="0.7"/>';
+    s+='<circle cx="'+X(cx)+'" cy="'+Y(cy)+'" r="8.5" fill="'+rgb(AVG[q])+'" stroke="#E2563F" stroke-width="2.5"/>';
+    s+='<text x="'+(X(cx)+12)+'" y="'+(Y(cy)+3)+'" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#E2563F">q'+(blendT>0.99?' &rarr; ('+Math.round(nb[0])+','+Math.round(nb[1])+')':'')+'</text>';
+    root.querySelector('#pplane').innerHTML=s;
+  }
+
+  function diyHTML(){
+    var Q=TOKEN[q],K=TOKEN[insK],t1=Q[0]*K[0],t2=Q[1]*K[1],sc=t1+t2,W=weights();
+    var h='<div class="hd"><span class="qv">Q (asker) = ('+Q[0]+', '+Q[1]+')</span>'+
+          '<span class="kv"><span class="sw" style="background:'+rgb(AVG[insK])+'"></span>K (slot '+insK+') = ('+K[0]+', '+K[1]+')</span></div>';
+    h+='<div class="calc">';
+    h+='<div class="lab">'+Q[0]+' &times; '+K[0]+' &nbsp;<span style="color:#9aa0ad">(q&#8321;&times;k&#8321;)</span></div>'+
+       (r1?'<div class="rv done">'+t1+'</div>':'<button class="rv" data-a="1">&times; multiply</button>');
+    h+='<div class="lab">'+Q[1]+' &times; '+K[1]+' &nbsp;<span style="color:#9aa0ad">(q&#8322;&times;k&#8322;)</span></div>'+
+       (r2?'<div class="rv done">'+t2+'</div>':'<button class="rv" data-a="2">&times; multiply</button>');
+    h+='<div class="div"></div>';
+    h+='<div class="lab"><b>score = q&#8321;k&#8321; + q&#8322;k&#8322;</b></div>'+
+       (rs?'<div class="rv done" style="background:#E6F5F2;color:#15805f">'+sc+'</div>'
+          :'<button class="rv" data-a="s" '+((r1&&r2)?'':'disabled')+'>+ add</button>');
+    if(rs){ var mx=0; for(var p=0;p<9;p++) mx=Math.max(mx,Math.abs(score(p)));
+      h+='<div class="scoreout">'+(mx<1e-9
+        ?'every score is 0 &rarr; attention spreads evenly.'
+        :'scaled &amp; softmaxed &rarr; weight = <span class="s">'+Math.round(W[insK]*100)+'%</span>')+'</div>'; }
+    h+='</div>';
+    var sign = sc>50?'point the <b>same way</b> &rarr; high relevance':(sc<-50?'point <b>opposite</b> ways &rarr; near-zero weight':'are roughly <b>perpendicular</b> &rarr; low relevance');
+    h+='<div class="geo">dot product '+(sc>0?'+':'')+sc+' &middot; the two tokens '+sign+'.</div>';
+    return h;
+  }
+
+  function barsHTML(W){
+    var s='';
+    for(var p=0;p<9;p++){ var pct=Math.round(W[p]*100),self=(p===q),sel=(p===insK);
+      s+='<div class="brow'+(self?' selfrow':'')+(sel?' sel':'')+'" data-p="'+p+'">'+
+         '<span class="sw" style="background:'+rgb(AVG[p])+'"></span>'+
+         '<span class="sl">slot '+p+(self?'*':'')+'</span>'+
+         '<span class="track"><span class="fill" style="width:'+pct+'%"></span></span>'+
+         '<span class="pct">'+pct+'%</span></div>'; }
+    var B=root.querySelector('#bars'); B.innerHTML=s;
+    Array.prototype.forEach.call(B.querySelectorAll('.brow'),function(el){ el.addEventListener('click',function(){ insK=+this.dataset.p; resetDIY(); render(); }); });
+  }
+
+  function caption(W){
+    if(q===6||q===8) return 'A <b>blank</b> asker matches nothing, every dot product is 0, so attention is <span class="g">uniform</span> and it just soaks up the <b>average of the image</b>.';
+    if(q===7) return 'The lone <b>trunk</b> matches no other brown, so it mostly attends to itself. Similarity has nothing to grab onto.';
+    if(q===4) return 'The mixed <b>centre</b> patch is part-green, part-brown, so it matches both families a little and blends toward the middle.';
+    return 'The <span class="g">green</span> asker scores highest against <b>itself and the other greens</b>; the <span class="hot">trunk</span>, pointing the opposite way, gets a negative score and almost no weight.';
+  }
+
+  var flipped=false;
+  function fit(){}
+  function render(){ var W=weights(); imgSVG(); planeSVG(W); diyHTML&&(root.querySelector('#diybox').innerHTML=diyHTML()); barsHTML(W); root.querySelector('#pcap').innerHTML=caption(W);
+    var db=root.querySelector('#diybox');
+    Array.prototype.forEach.call(db.querySelectorAll('.rv'),function(el){ if(el.tagName!=='BUTTON')return; el.addEventListener('click',function(){ var a=this.dataset.a; if(a==='1')r1=true; else if(a==='2')r2=true; else if(a==='s'&&r1&&r2)rs=true; render(); }); });
+  }
+
+  function stopAnim(){ if(anim){ cancelAnimationFrame(anim); anim=null; } }
+  function runBlend(){ stopAnim(); var t0=null,dur=720; function fr(ts){ if(!t0)t0=ts; var k=Math.min(1,(ts-t0)/dur); blendT=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2; planeSVG(weights()); if(k<1) anim=requestAnimationFrame(fr); else { blendT=1; anim=null; render(); } } anim=requestAnimationFrame(fr); }
+
+  root.querySelector('#blend').addEventListener('click',runBlend);
+  root.querySelector('#reset').addEventListener('click',function(){ stopAnim(); blendT=0; resetDIY(); render(); });
+
+  insK=topNonSelf(); render();
+})();
+
+</script>
+<script>
+
+(function(){
+  var root=document.getElementById('card-attn-bind');
+  var IMG=[[0,0,1,1,0,0],[0,1,1,1,1,0],[1,1,1,1,1,1],[0,0,2,2,0,0],[0,0,2,2,0,0],[0,0,2,2,0,0]];
+  var PAL={0:[255,255,255],1:[52,168,91],2:[160,106,63]};
+  function rgb(a){ return 'rgb('+a[0]+','+a[1]+','+a[2]+')'; }
+  function cells(i){ var pr=Math.floor(i/3),pc=i%3,o=[]; for(var r=0;r<2;r++)for(var c=0;c<2;c++)o.push([pr*2+r,pc*2+c]); return o; }
+  var TYPES=[],AVG=[],TOKEN=[];
+  for(var i=0;i<9;i++){ var cc=cells(i),t=[],R=0,G=0,B=0;
+    cc.forEach(function(rc){ var ty=IMG[rc[0]][rc[1]]; t.push(ty); var v=PAL[ty]; R+=v[0];G+=v[1];B+=v[2]; });
+    TYPES.push(t); AVG.push([Math.round(R/4),Math.round(G/4),Math.round(B/4)]);
+    var a=AVG[i]; TOKEN.push([a[1]-a[0],a[0]-a[2]]); }
+
+  var q=1, theta=0, blendT=0, anim=null;
+  function rad(){ return theta*Math.PI/180; }
+  function Qvec(){ var t=TOKEN[q],c=Math.cos(rad()),s=Math.sin(rad()); return [t[0]*c - t[1]*s, t[0]*s + t[1]*c]; }
+  function score(p){ var Q=Qvec(),K=TOKEN[p]; return Q[0]*K[0]+Q[1]*K[1]; }
+  function weights(){ var sc=[],mx=0; for(var p=0;p<9;p++){ sc.push(score(p)); mx=Math.max(mx,Math.abs(sc[p])); }
+    var w=[],sum=0,T=2.5; if(mx<1e-9){ for(var p=0;p<9;p++) w.push(1/9); return w; }
+    for(var p=0;p<9;p++){ var e=Math.exp(T*sc[p]/mx); w.push(e); sum+=e; } for(var p=0;p<9;p++) w[p]/=sum; return w; }
+  function blended(W){ var x=0,y=0; for(var p=0;p<9;p++){ x+=W[p]*TOKEN[p][0]; y+=W[p]*TOKEN[p][1]; } return [x,y]; }
+  function complementSlot(){ return q===7 ? 1 : 7; }
+
+  function imgSVG(){
+    var cs=22,ox=6,oy=6,s='';
+    for(var p=0;p<9;p++){ var pr=Math.floor(p/3),pc=p%3,t=TYPES[p];
+      for(var k=0;k<4;k++){ var rr=Math.floor(k/2),ck=k%2; var x=ox+(pc*2+ck)*cs,y=oy+(pr*2+rr)*cs;
+        s+='<rect x="'+x+'" y="'+y+'" width="'+(cs+0.5)+'" height="'+(cs+0.5)+'" fill="'+rgb(PAL[t[k]])+'"/>'; } }
+    for(var k=1;k<3;k++){
+      s+='<line x1="'+(ox+k*2*cs)+'" y1="'+oy+'" x2="'+(ox+k*2*cs)+'" y2="'+(oy+6*cs)+'" stroke="#3D3AE0" stroke-width="1.4"/>';
+      s+='<line x1="'+ox+'" y1="'+(oy+k*2*cs)+'" x2="'+(ox+6*cs)+'" y2="'+(oy+k*2*cs)+'" stroke="#3D3AE0" stroke-width="1.4"/>'; }
+    s+='<rect x="'+ox+'" y="'+oy+'" width="'+(6*cs)+'" height="'+(6*cs)+'" fill="none" stroke="#3D3AE0" stroke-width="1.4"/>';
+    var qr=Math.floor(q/3),qc=q%3;
+    s+='<rect x="'+(ox+qc*2*cs-1)+'" y="'+(oy+qr*2*cs-1)+'" width="'+(2*cs+2)+'" height="'+(2*cs+2)+'" fill="none" stroke="#E2563F" stroke-width="3"/>';
+    for(var p=0;p<9;p++){ var pr=Math.floor(p/3),pc=p%3;
+      s+='<rect class="hit" data-p="'+p+'" x="'+(ox+pc*2*cs)+'" y="'+(oy+pr*2*cs)+'" width="'+(2*cs)+'" height="'+(2*cs)+'" fill="transparent" style="cursor:pointer"/>'; }
+    var M=root.querySelector('#pimg'); M.innerHTML=s;
+    Array.prototype.forEach.call(M.querySelectorAll('.hit'),function(el){ el.addEventListener('click',function(){ q=+this.dataset.p; stopAnim(); blendT=0; render(); }); });
+  }
+
+  function arrow(x1,y1,x2,y2,col,w,op){
+    var a=Math.atan2(y2-y1,x2-x1), hl=8;
+    var hx=x2-hl*Math.cos(a), hy=y2-hl*Math.sin(a);
+    var s='<line x1="'+x1+'" y1="'+y1+'" x2="'+hx+'" y2="'+hy+'" stroke="'+col+'" stroke-width="'+w+'" opacity="'+op+'" stroke-linecap="round"/>';
+    s+='<polygon points="'+x2+','+y2+' '+(x2-hl*Math.cos(a-0.4))+','+(y2-hl*Math.sin(a-0.4))+' '+(x2-hl*Math.cos(a+0.4))+','+(y2-hl*Math.sin(a+0.4))+'" fill="'+col+'" opacity="'+op+'"/>';
+    return s;
+  }
+
+  function planeSVG(W){
+    var Wd=470,H=250,padL=42,padR=16,padT=14,padB=28, x0=-75,x1=135,y0=-60,y1=115;
+    function X(e){ return padL+(e-x0)/(x1-x0)*(Wd-padL-padR); }
+    function Y(e){ return padT+(y1-e)/(y1-y0)*(H-padT-padB); }
+    var s='';
+    s+='<line x1="'+padL+'" y1="'+Y(0)+'" x2="'+(Wd-padR)+'" y2="'+Y(0)+'" stroke="#E2E5EC"/>';
+    s+='<line x1="'+X(0)+'" y1="'+padT+'" x2="'+X(0)+'" y2="'+(H-padB)+'" stroke="#E2E5EC"/>';
+    var Z=TOKEN[q],Q=Qvec();
+    // faint Z (the token) and bold Q (the rotated query) rays from origin
+    if(Math.hypot(Z[0],Z[1])>1){
+      s+=arrow(X(0),Y(0),X(Z[0]),Y(Z[1]),'#9aa0ad',1.6,0.6);
+      s+='<text x="'+(X(Z[0])+5)+'" y="'+(Y(Z[1])-3)+'" font-family="Space Mono,monospace" font-size="9" fill="#9aa0ad">Z</text>';
+      s+=arrow(X(0),Y(0),X(Q[0]),Y(Q[1]),'#3D3AE0',2.6,0.95);
+      s+='<text x="'+(X(Q[0])+5)+'" y="'+(Y(Q[1])-3)+'" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="#3D3AE0">Q</text>';
+    }
+    var groups={};
+    for(var p=0;p<9;p++){ var k=TOKEN[p][0]+','+TOKEN[p][1]; if(!groups[k])groups[k]={x:TOKEN[p][0],y:TOKEN[p][1],items:[]}; groups[k].items.push(p); }
+    Object.keys(groups).forEach(function(k){ var g=groups[k],x=X(g.x),y=Y(g.y),col=AVG[g.items[0]],isq=g.items.indexOf(q)>=0;
+      var wsum=0; g.items.forEach(function(p){ wsum+=W[p]; });
+      var rr=5+11*wsum;
+      s+='<circle cx="'+x+'" cy="'+y+'" r="'+rr+'" fill="'+rgb(col)+'" stroke="#15171E" stroke-width="1" opacity="'+(isq?0.85:1)+'"/>';
+      if(isq) s+='<circle cx="'+x+'" cy="'+y+'" r="'+(rr+3)+'" fill="none" stroke="#E2563F" stroke-width="2"/>';
+      if(g.items.length>1) s+='<text x="'+(x+rr+2)+'" y="'+(y-rr+2)+'" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#E2563F">&times;'+g.items.length+'</text>';
+    });
+    var nb=blended(W),cx=Z[0]+(nb[0]-Z[0])*blendT,cy=Z[1]+(nb[1]-Z[1])*blendT;
+    if(blendT>0){ s+='<circle cx="'+X(cx)+'" cy="'+Y(cy)+'" r="7" fill="'+rgb(AVG[q])+'" stroke="#E2563F" stroke-width="2.5"/>';
+      s+='<text x="'+(X(cx)+11)+'" y="'+(Y(cy)+3)+'" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#E2563F">'+(blendT>0.99?'('+Math.round(nb[0])+','+Math.round(nb[1])+')':'')+'</text>'; }
+    root.querySelector('#pplane').innerHTML=s;
+  }
+
+  function geoHTML(){
+    var Z=TOKEN[q],Q=Qvec(),cs=complementSlot();
+    var qZ=Math.round(score(q)), qC=Math.round(score(cs));
+    var h='';
+    h+='<div><span class="q">Q = R('+theta+'&deg;)&middot;Z</span> = ('+Math.round(Q[0])+', '+Math.round(Q[1])+')'+(theta===90?' = (&minus;z&#8322;, z&#8321;)':'')+'</div>';
+    h+='<div>Q &middot; <span class="g">self (Z)</span> = '+(Math.abs(qZ)<1?'<span class="zero">'+qZ+'</span>':qZ)+'</div>';
+    h+='<div>Q &middot; <span class="hot">'+(cs===7?'trunk':'green')+'</span> = '+(qC>1500?'<span class="big">'+qC+'</span>':qC)+'</div>';
+    if(theta===0) h+='<div style="color:#5A6172">at 0&deg; the query is the token. This is <b>match</b>.</div>';
+    else if(theta>=88) h+='<div style="color:#5A6172">a 90&deg; turn makes Q&middot;self collapse to <b>0</b> and Q&middot;complement <b>peak</b>.</div>';
+    else h+='<div style="color:#5A6172">turning the query trades self-similarity for the complement.</div>';
+    return h;
+  }
+
+  function barsHTML(W){
+    var s='';
+    for(var p=0;p<9;p++){ var pct=Math.round(W[p]*100),self=(p===q);
+      s+='<div class="brow'+(self?' selfrow':'')+'">'+
+         '<span class="sw" style="background:'+rgb(AVG[p])+'"></span>'+
+         '<span class="sl">slot '+p+(self?'*':'')+'</span>'+
+         '<span class="track"><span class="fill" style="width:'+pct+'%"></span></span>'+
+         '<span class="pct">'+pct+'%</span></div>'; }
+    root.querySelector('#bars').innerHTML=s;
+  }
+
+  function caption(){
+    var green=(q===0||q===1||q===2||q===3||q===5);
+    if(q===6||q===8) return 'A <b>blank</b> patch has no direction, so rotating its query does nothing, it stays diffuse whatever &theta; you pick.';
+    if(green){
+      if(theta<25) return 'Barely turned, the query still points into the <span class="g">greens</span>. This is essentially <b>match</b>.';
+      if(theta<72) return 'As the query rotates, it swings away from the greens, attention is <b>in transit</b>, sliding toward the trunk.';
+      return 'Fully turned: the query now points at the <span class="hot">trunk&rsquo;s</span> direction. The canopy asks for its <b>complement</b> and locks onto the trunk. <b>Green binds to brown</b>.';
+    }
+    if(q===7) return 'The <span class="hot">trunk</span> as asker: rotating its query swings it toward the <span class="g">greens</span>, the same binding, seen from the other end.';
+    return 'The mixed <b>centre</b> patch already straddles both directions, so rotation just slides its focus between green and brown.';
+  }
+
+  function setSnaps(){ root.querySelector('#snap0').classList.toggle('on',theta===0); root.querySelector('#snap90').classList.toggle('on',theta===90); root.querySelector('#tval').innerHTML=theta+'&deg;'; root.querySelector('#theta').value=theta; }
+
+  function render(){ var W=weights(); imgSVG(); planeSVG(W); root.querySelector('#geo').innerHTML=geoHTML(); barsHTML(W); root.querySelector('#pcap').innerHTML=caption(); setSnaps(); }
+  function lite(){ var W=weights(); planeSVG(W); root.querySelector('#geo').innerHTML=geoHTML(); barsHTML(W); root.querySelector('#pcap').innerHTML=caption(); setSnaps(); }
+
+  function stopAnim(){ if(anim){ cancelAnimationFrame(anim); anim=null; } }
+  function runBlend(){ stopAnim(); var t0=null,dur=720; function fr(ts){ if(!t0)t0=ts; var k=Math.min(1,(ts-t0)/dur); blendT=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2; planeSVG(weights()); if(k<1) anim=requestAnimationFrame(fr); else { blendT=1; anim=null; lite(); } } anim=requestAnimationFrame(fr); }
+
+  root.querySelector('#theta').addEventListener('input',function(){ theta=+this.value; stopAnim(); blendT=0; lite(); });
+  root.querySelector('#snap0').addEventListener('click',function(){ theta=0; stopAnim(); blendT=0; lite(); });
+  root.querySelector('#snap90').addEventListener('click',function(){ theta=90; stopAnim(); blendT=0; lite(); });
+  root.querySelector('#blend').addEventListener('click',runBlend);
+  root.querySelector('#reset').addEventListener('click',function(){ theta=0; stopAnim(); blendT=0; render(); });
+
+  render();
+})();
+
+</script>
+<script>
+
+(function(){
+  var root=document.getElementById('card-attn-combined');
+  var IMG=[[0,0,1,1,0,0],[0,1,1,1,1,0],[1,1,1,1,1,1],[0,0,2,2,0,0],[0,0,2,2,0,0],[0,0,2,2,0,0]];
+  var PAL={0:[255,255,255],1:[52,168,91],2:[160,106,63]};
+  function rgb(a){ return 'rgb('+a[0]+','+a[1]+','+a[2]+')'; }
+  function cells(i){ var pr=Math.floor(i/3),pc=i%3,o=[]; for(var r=0;r<2;r++)for(var c=0;c<2;c++)o.push([pr*2+r,pc*2+c]); return o; }
+  var TYPES=[],AVG=[],TOKEN=[];
+  for(var i=0;i<9;i++){ var cc=cells(i),t=[],R=0,G=0,B=0;
+    cc.forEach(function(rc){ var ty=IMG[rc[0]][rc[1]]; t.push(ty); var v=PAL[ty]; R+=v[0];G+=v[1];B+=v[2]; });
+    TYPES.push(t); AVG.push([Math.round(R/4),Math.round(G/4),Math.round(B/4)]);
+    var a=AVG[i]; TOKEN.push([a[1]-a[0],a[0]-a[2]]); }
+
+  function rot(t){ return [-t[1],t[0]]; }
+  function wLens(tok,q,lens){ var Q=lens==='bind'?rot(tok[q]):tok[q], sc=[],mx=0;
+    for(var p=0;p<9;p++){ var s=Q[0]*tok[p][0]+Q[1]*tok[p][1]; sc.push(s); mx=Math.max(mx,Math.abs(s)); }
+    var w=[],sum=0,T=2.5; if(mx<1e-9){ for(var p=0;p<9;p++) w.push(1/9); return w; }
+    for(var p=0;p<9;p++){ var e=Math.exp(T*sc[p]/mx); w.push(e); sum+=e; } for(var p=0;p<9;p++) w[p]/=sum; return w; }
+  function blend(tok,w){ var x=0,y=0; for(var p=0;p<9;p++){ x+=w[p]*tok[p][0]; y+=w[p]*tok[p][1]; } return [x,y]; }
+  function heads(tok,q){ var wm=wLens(tok,q,'match'),wb=wLens(tok,q,'bind'),a=blend(tok,wm),b=blend(tok,wb);
+    return {wm:wm,wb:wb,a:a,b:b,c:[(a[0]+b[0])/2,(a[1]+b[1])/2]}; }
+
+  var view='one', q=1, blendT=0, anim=null;
+  var CUR=TOKEN.map(function(t){return t.slice();}), PREV=null, layer=0, layerT=1;
+
+  function imgSVG(active){
+    var cs=22,ox=6,oy=6,s='';
+    for(var p=0;p<9;p++){ var pr=Math.floor(p/3),pc=p%3,t=TYPES[p];
+      for(var k=0;k<4;k++){ var rr=Math.floor(k/2),ck=k%2; var x=ox+(pc*2+ck)*cs,y=oy+(pr*2+rr)*cs;
+        s+='<rect x="'+x+'" y="'+y+'" width="'+(cs+0.5)+'" height="'+(cs+0.5)+'" fill="'+rgb(PAL[t[k]])+'"/>'; } }
+    for(var k=1;k<3;k++){
+      s+='<line x1="'+(ox+k*2*cs)+'" y1="'+oy+'" x2="'+(ox+k*2*cs)+'" y2="'+(oy+6*cs)+'" stroke="#3D3AE0" stroke-width="1.4"/>';
+      s+='<line x1="'+ox+'" y1="'+(oy+k*2*cs)+'" x2="'+(ox+6*cs)+'" y2="'+(oy+k*2*cs)+'" stroke="#3D3AE0" stroke-width="1.4"/>'; }
+    s+='<rect x="'+ox+'" y="'+oy+'" width="'+(6*cs)+'" height="'+(6*cs)+'" fill="none" stroke="#3D3AE0" stroke-width="1.4"/>';
+    if(active){ var qr=Math.floor(q/3),qc=q%3;
+      s+='<rect x="'+(ox+qc*2*cs-1)+'" y="'+(oy+qr*2*cs-1)+'" width="'+(2*cs+2)+'" height="'+(2*cs+2)+'" fill="none" stroke="#E2563F" stroke-width="3"/>'; }
+    for(var p=0;p<9;p++){ var pr=Math.floor(p/3),pc=p%3;
+      s+='<rect class="hit" data-p="'+p+'" x="'+(ox+pc*2*cs)+'" y="'+(oy+pr*2*cs)+'" width="'+(2*cs)+'" height="'+(2*cs)+'" fill="transparent" style="cursor:'+(active?'pointer':'default')+'"/>'; }
+    var M=root.querySelector('#pimg'); M.innerHTML=s;
+    if(active) Array.prototype.forEach.call(M.querySelectorAll('.hit'),function(el){ el.addEventListener('click',function(){ q=+this.dataset.p; stopAnim(); blendT=0; render(); }); });
+  }
+
+  function arrow(x1,y1,x2,y2,col,w,op){ var a=Math.atan2(y2-y1,x2-x1),hl=7,hx=x2-hl*Math.cos(a),hy=y2-hl*Math.sin(a);
+    return '<line x1="'+x1+'" y1="'+y1+'" x2="'+hx+'" y2="'+hy+'" stroke="'+col+'" stroke-width="'+w+'" opacity="'+op+'" stroke-linecap="round"/>'+
+      '<polygon points="'+x2+','+y2+' '+(x2-hl*Math.cos(a-0.45))+','+(y2-hl*Math.sin(a-0.45))+' '+(x2-hl*Math.cos(a+0.45))+','+(y2-hl*Math.sin(a+0.45))+'" fill="'+col+'" opacity="'+op+'"/>'; }
+
+  function PX(){ var Wd=470,padL=42,padR=16,x0=-75,x1=135; return function(e){ return padL+(e-x0)/(x1-x0)*(Wd-padL-padR); }; }
+  function PY(){ var H=250,padT=14,padB=28,y0=-60,y1=115; return function(e){ return padT+(y1-e)/(y1-y0)*(H-padT-padB); }; }
+  function axes(X,Y){ return '<line x1="42" y1="'+Y(0)+'" x2="454" y2="'+Y(0)+'" stroke="#E2E5EC"/><line x1="'+X(0)+'" y1="14" x2="'+X(0)+'" y2="222" stroke="#E2E5EC"/>'; }
+
+  function planeOne(){
+    var X=PX(),Y=PY(),H=heads(TOKEN,q),s=axes(X,Y),qx=TOKEN[q][0],qy=TOKEN[q][1];
+    for(var p=0;p<9;p++){ if(p===q)continue;
+      if(H.wm[p]>0.12) s+=arrow(X(qx),Y(qy),X(TOKEN[p][0]),Y(TOKEN[p][1]),'#1F9E8F',1+7*H.wm[p],0.45);
+      if(H.wb[p]>0.12) s+=arrow(X(qx),Y(qy),X(TOKEN[p][0]),Y(TOKEN[p][1]),'#3D3AE0',1+7*H.wb[p],0.45); }
+    var groups={};
+    for(var p=0;p<9;p++){ var k=TOKEN[p][0]+','+TOKEN[p][1]; if(!groups[k])groups[k]={x:TOKEN[p][0],y:TOKEN[p][1],items:[]}; groups[k].items.push(p); }
+    Object.keys(groups).forEach(function(k){ var g=groups[k],x=X(g.x),y=Y(g.y),col=AVG[g.items[0]],isq=g.items.indexOf(q)>=0;
+      s+='<circle cx="'+x+'" cy="'+y+'" r="6.5" fill="'+rgb(col)+'" stroke="#15171E" stroke-width="1" opacity="'+(isq?0.35:1)+'"/>';
+      if(g.items.length>1) s+='<text x="'+(x+8)+'" y="'+(y-6)+'" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#E2563F">&times;'+g.items.length+'</text>'; });
+    // head outputs
+    s+='<circle cx="'+X(H.a[0])+'" cy="'+Y(H.a[1])+'" r="6" fill="none" stroke="#1F9E8F" stroke-width="2"/>';
+    s+='<circle cx="'+X(H.b[0])+'" cy="'+Y(H.b[1])+'" r="6" fill="none" stroke="#3D3AE0" stroke-width="2"/>';
+    var cx=qx+(H.c[0]-qx)*blendT, cy=qy+(H.c[1]-qy)*blendT;
+    s+='<circle cx="'+X(cx)+'" cy="'+Y(cy)+'" r="8" fill="'+rgb(AVG[q])+'" stroke="#E2563F" stroke-width="2.5"/>';
+    if(blendT>0.99) s+='<text x="'+(X(cx)+11)+'" y="'+(Y(cy)+3)+'" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#E2563F">('+Math.round(H.c[0])+','+Math.round(H.c[1])+')</text>';
+    root.querySelector('#pplane').innerHTML=s;
+  }
+
+  function planeLayer(){
+    var X=PX(),Y=PY(),s=axes(X,Y);
+    var disp=[]; for(var p=0;p<9;p++){ if(PREV&&layerT<1){ disp.push([PREV[p][0]+(CUR[p][0]-PREV[p][0])*layerT, PREV[p][1]+(CUR[p][1]-PREV[p][1])*layerT]); } else disp.push(CUR[p].slice()); }
+    if(PREV) for(var p=0;p<9;p++){ if(Math.hypot(CUR[p][0]-PREV[p][0],CUR[p][1]-PREV[p][1])>3) s+=arrow(X(PREV[p][0]),Y(PREV[p][1]),X(disp[p][0]),Y(disp[p][1]),'#cbd0da',1.4,0.7); }
+    var groups={};
+    for(var p=0;p<9;p++){ var k=Math.round(disp[p][0])+','+Math.round(disp[p][1]); if(!groups[k])groups[k]={x:disp[p][0],y:disp[p][1],items:[]}; groups[k].items.push(p); }
+    Object.keys(groups).forEach(function(k){ var g=groups[k],x=X(g.x),y=Y(g.y),col=AVG[g.items[0]];
+      s+='<circle cx="'+x+'" cy="'+y+'" r="7" fill="'+rgb(col)+'" stroke="#15171E" stroke-width="1"/>';
+      if(g.items.length>1) s+='<text x="'+(x+9)+'" y="'+(y-6)+'" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#E2563F">&times;'+g.items.length+'</text>'; });
+    root.querySelector('#pplane').innerHTML=s;
+  }
+
+  function panelOne(){
+    var H=heads(TOKEN,q);
+    var h='<div class="heads"><div class="hline"><span class="htag m">HEAD A · match</span><span class="desc">blends toward its own kind</span><span class="out">A = ('+Math.round(H.a[0])+', '+Math.round(H.a[1])+')</span></div>'+
+      '<div class="hline"><span class="htag b">HEAD B · bind</span><span class="desc">reaches for the complement</span><span class="out">B = ('+Math.round(H.b[0])+', '+Math.round(H.b[1])+')</span></div>'+
+      '<div class="hline"><span class="htag c">COMBINED</span><span class="desc">&frac12;(A + B)</span><span class="out">= ('+Math.round(H.c[0])+', '+Math.round(H.c[1])+')</span></div>';
+    var green=(q===0||q===1||q===2||q===3||q===5);
+    var msg = green ? 'The canopy keeps its green identity <i>and</i> gains trunk-context, it lands near the green-brown junction. <b>Still green, now part of a tree.</b>'
+      : (q===7 ? 'The trunk holds onto brown while pulling in canopy-context from the other side of the image.'
+      : (q===6||q===8) ? 'A blank patch has no direction for either head, so it just settles on the image&rsquo;s gist.'
+      : 'The centre patch already mixes both, so the two heads barely move it, it&rsquo;s already a little tree in itself.');
+    h+='<div class="hsum">'+msg+'</div></div>';
+    root.querySelector('#panel').innerHTML=h;
+  }
+
+  function panelLayer(){
+    var h='<div class="heads"><div class="hsum" style="margin-top:2px">'+
+      (layer===0 ? 'Press <b>Run a layer</b> to update <b>every</b> patch at once, each one fuses its match and bind heads.'
+       : 'Layer '+layer+' applied. The nine tokens have pulled in from scattered colours toward a shared <b>tree</b> region, greens, trunk and blanks now overlap. Run again to deepen, or reset.')+
+      '</div></div>';
+    root.querySelector('#panel').innerHTML=h;
+  }
+
+  function controlsHTML(){
+    if(view==='one') return '<button class="btn primary" id="act">Combine the heads &#8594;</button><button class="btn" id="rst"><span>&#8635;</span> Reset</button><span style="font-family:var(--mono);font-size:11px;color:#5A6172">click a patch to change the asker</span>';
+    return '<button class="btn primary" id="act">Run a layer on all patches &#8594;</button><button class="btn" id="rst"><span>&#8635;</span> Reset</button><span style="font-family:var(--mono);font-size:11px;color:#5A6172">layer '+layer+'</span>';
+  }
+
+  function caption(){
+    if(view==='one'){
+      var green=(q===0||q===1||q===2||q===3||q===5);
+      if(q===6||q===8) return 'Both heads agree on nothing in particular for a <b>blank</b> patch, so it lands on the average.';
+      return 'The <span class="g">match head</span> (teal) pulls toward like patches; the <span class="i">bind head</span> (indigo) reaches for the complement. Their <span class="hot">average</span> is the patch&rsquo;s new token.';
+    }
+    return layer===0 ? 'Nine isolated tokens: greens far right, trunk up top, blanks at the origin.'
+      : 'After a layer, the cloud <b>contracts</b>: every patch now carries a little of the others. The image is becoming one connected thing.';
+  }
+
+  var flipped=false;
+  function fit(){ var fr=root.querySelector('#frontface'),bk=root.querySelector('#backface'),inr=root.querySelector('#inner'); inr.style.height=(flipped?bk.scrollHeight:fr.scrollHeight)+'px'; }
+  function bindControls(){ var a=root.querySelector('#act'),r=root.querySelector('#rst');
+    if(a) a.addEventListener('click',onAct); if(r) r.addEventListener('click',onReset); }
+  function render(){
+    Array.prototype.forEach.call(root.querySelectorAll('#seg button'),function(b){ b.classList.toggle('on',b.dataset.v===view); });
+    root.querySelector('#lcap').textContent = view==='one'?'Asker':'The image';
+    root.querySelector('#planecap').innerHTML = view==='one'?'Token space &middot; <span style="color:#1F9E8F">match</span> + <span style="color:#3D3AE0">bind</span> &rarr; <span style="color:#E2563F">combined</span>':'Token space &middot; the whole set, updating';
+    root.querySelector('#inote').style.visibility = view==='one'?'visible':'hidden';
+    imgSVG(view==='one');
+    if(view==='one'){ planeOne(); panelOne(); } else { planeLayer(); panelLayer(); }
+    root.querySelector('#pcap').innerHTML=caption();
+    root.querySelector('#controls').innerHTML=controlsHTML(); bindControls();
+    fit();
+  }
+
+  function stopAnim(){ if(anim){ cancelAnimationFrame(anim); anim=null; } }
+  function onAct(){
+    if(view==='one'){ stopAnim(); var t0=null,dur=720; (function go(){ function fr(ts){ if(!t0)t0=ts; var k=Math.min(1,(ts-t0)/dur); blendT=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2; planeOne(); if(k<1) anim=requestAnimationFrame(fr); else { blendT=1; anim=null; render(); } } anim=requestAnimationFrame(fr); })(); }
+    else { stopAnim(); PREV=CUR.map(function(t){return t.slice();}); var nx=[]; for(var p=0;p<9;p++){ var H=heads(CUR,p); nx.push([H.c[0],H.c[1]]); } CUR=nx; layer++; var t0=null,dur=760;
+      function fr(ts){ if(!t0)t0=ts; var k=Math.min(1,(ts-t0)/dur); layerT=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2; planeLayer(); if(k<1) anim=requestAnimationFrame(fr); else { layerT=1; anim=null; render(); } } anim=requestAnimationFrame(fr); }
+  }
+  function onReset(){ stopAnim();
+    if(view==='one'){ blendT=0; render(); }
+    else { CUR=TOKEN.map(function(t){return t.slice();}); PREV=null; layer=0; layerT=1; render(); }
+  }
+
+  root.querySelector('#seg').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return; view=b.dataset.v; stopAnim(); blendT=0;
+    if(view==='layer'){ CUR=TOKEN.map(function(t){return t.slice();}); PREV=null; layer=0; layerT=1; } render(); });
+  var btn=root.querySelector('#flipbtn');
+  btn.addEventListener('click',function(){ flipped=!flipped; root.querySelector('#inner').classList.toggle('flipped',flipped); btn.querySelector('.lbl').textContent=flipped?'Back to the toy':'Compare to the paper'; fit(); });
+
+  // controls container injected after seg's stage
+  var cdiv=document.createElement('div'); cdiv.className='controls'; cdiv.id='controls';
+  root.querySelector('.stage').insertAdjacentElement('beforebegin',cdiv);
+
+  render(); window.addEventListener('load',fit); setTimeout(fit,400);
+})();
+
+</script>
+<script>
+
+(function(){
+  var root=document.getElementById('card-classify');
+  var IMG=[[0,0,1,1,0,0],[0,1,1,1,1,0],[1,1,1,1,1,1],[0,0,2,2,0,0],[0,0,2,2,0,0],[0,0,2,2,0,0]];
+  var PAL={0:[255,255,255],1:[52,168,91],2:[160,106,63]};
+  function rgb(a){ return 'rgb('+a[0]+','+a[1]+','+a[2]+')'; }
+  function cells(i){ var pr=Math.floor(i/3),pc=i%3,o=[]; for(var r=0;r<2;r++)for(var c=0;c<2;c++)o.push([pr*2+r,pc*2+c]); return o; }
+  var TYPES=[],AVG=[],TOKEN=[];
+  for(var i=0;i<9;i++){ var cc=cells(i),t=[],R=0,G=0,B=0;
+    cc.forEach(function(rc){ var ty=IMG[rc[0]][rc[1]]; t.push(ty); var v=PAL[ty]; R+=v[0];G+=v[1];B+=v[2]; });
+    TYPES.push(t); AVG.push([Math.round(R/4),Math.round(G/4),Math.round(B/4)]);
+    var a=AVG[i]; TOKEN.push([a[1]-a[0],a[0]-a[2]]); }
+
+  function rot(t){ return [-t[1],t[0]]; }
+  function wLens(tok,q,lens){ var Q=lens==='bind'?rot(tok[q]):tok[q], sc=[],mx=0;
+    for(var p=0;p<9;p++){ var s=Q[0]*tok[p][0]+Q[1]*tok[p][1]; sc.push(s); mx=Math.max(mx,Math.abs(s)); }
+    var w=[],sum=0,T=2.5; if(mx<1e-9){ for(var p=0;p<9;p++) w.push(1/9); return w; }
+    for(var p=0;p<9;p++){ var e=Math.exp(T*sc[p]/mx); w.push(e); sum+=e; } for(var p=0;p<9;p++) w[p]/=sum; return w; }
+  function blend(tok,w){ var x=0,y=0; for(var p=0;p<9;p++){ x+=w[p]*tok[p][0]; y+=w[p]*tok[p][1]; } return [x,y]; }
+  function combOut(tok,q){ var a=blend(tok,wLens(tok,q,'match')),b=blend(tok,wLens(tok,q,'bind')); return [(a[0]+b[0])/2,(a[1]+b[1])/2]; }
+  var AFTER = TOKEN.map(function(t,p){ return combOut(TOKEN,p); });
+
+  var view='before';
+  var WG=0.6, WR=0.9, B=-20;
+
+  function tokens(){ return view==='before' ? TOKEN : AFTER; }
+  function pooled(){ var t=tokens(),x=0,y=0; for(var p=0;p<9;p++){ x+=t[p][0]; y+=t[p][1]; } return [x/9,y/9]; }
+  function score(v){ return WG*v[0]+WR*v[1]+B; }
+
+  function poolTable(){
+    var t=tokens(), h='<tr><th>patch</th><th>greenness</th><th>redness</th></tr>';
+    for(var p=0;p<9;p++){
+      h+='<tr><td><span class="swrow"><span class="sw" style="background:'+rgb(AVG[p])+'"></span>'+p+'</span></td>'+
+         '<td>'+Math.round(t[p][0])+'</td><td>'+Math.round(t[p][1])+'</td></tr>';
+    }
+    var pv=pooled();
+    h+='<tr><td><b>avg</b></td><td><b>'+pv[0].toFixed(1)+'</b></td><td><b>'+pv[1].toFixed(1)+'</b></td></tr>';
+    root.querySelector('#pooltable').innerHTML=h;
+  }
+
+  function PX(){ var Wd=470,padL=42,padR=16,x0=-75,x1=135; return function(e){ return padL+(e-x0)/(x1-x0)*(Wd-padL-padR); }; }
+  function PY(){ var H=250,padT=14,padB=28,y0=-60,y1=115; return function(e){ return padT+(y1-e)/(y1-y0)*(H-padT-padB); }; }
+
+  function drawCloud(s, X, Y, t, active){
+    var groups={}, opMain = active ? 1 : 0.22, opStroke = active ? 1 : 0.3;
+    for(var p=0;p<9;p++){ var k=Math.round(t[p][0]*2)+','+Math.round(t[p][1]*2); if(!groups[k])groups[k]={x:t[p][0],y:t[p][1],items:[]}; groups[k].items.push(p); }
+    Object.keys(groups).forEach(function(k){ var g=groups[k],x=X(g.x),y=Y(g.y),col=AVG[g.items[0]];
+      s+='<circle cx="'+x+'" cy="'+y+'" r="6.5" fill="'+rgb(col)+'" stroke="#15171E" stroke-width="1" opacity="'+opMain+'"/>';
+      if(active && g.items.length>1) s+='<text x="'+(x+8)+'" y="'+(y-6)+'" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#E2563F">&times;'+g.items.length+'</text>'; });
+    var pv=[0,0]; for(var p=0;p<9;p++){ pv[0]+=t[p][0]; pv[1]+=t[p][1]; } pv[0]/=9; pv[1]/=9;
+    var pcol = active ? '#E2563F' : '#cbd0da';
+    s+='<circle cx="'+X(pv[0])+'" cy="'+Y(pv[1])+'" r="8.5" fill="none" stroke="'+pcol+'" stroke-width="2.5" opacity="'+(active?1:0.6)+'"/>';
+    s+='<circle cx="'+X(pv[0])+'" cy="'+Y(pv[1])+'" r="3" fill="'+pcol+'" opacity="'+(active?1:0.6)+'"/>';
+    if(active) s+='<text x="'+(X(pv[0])+12)+'" y="'+(Y(pv[1])+4)+'" font-family="Space Mono,monospace" font-size="10" font-weight="700" fill="#E2563F">('+pv[0].toFixed(1)+', '+pv[1].toFixed(1)+')</text>';
+    return s;
+  }
+
+  function planeSVG(){
+    var X=PX(),Y=PY(),s='';
+    s+='<line x1="42" y1="'+Y(0)+'" x2="454" y2="'+Y(0)+'" stroke="#E2E5EC"/><line x1="'+X(0)+'" y1="14" x2="'+X(0)+'" y2="222" stroke="#E2E5EC"/>';
+    // draw inactive state first (ghosted), active state on top
+    if(view==='before'){ s=drawCloud(s,X,Y,AFTER,false); s=drawCloud(s,X,Y,TOKEN,true); }
+    else { s=drawCloud(s,X,Y,TOKEN,false); s=drawCloud(s,X,Y,AFTER,true); }
+    root.querySelector('#pplane').innerHTML=s;
+  }
+
+  function calcHTML(){
+    var pv=pooled(), sc=score(pv), t1=WG*pv[0], t2=WR*pv[1];
+    var h='';
+    h+='<div>score = <span class="term tg">'+WG+'</span>&middot;<span class="tg">'+pv[0].toFixed(1)+'</span> + <span class="term tr">'+WR+'</span>&middot;<span class="tr">'+pv[1].toFixed(1)+'</span> + ('+B+')</div>';
+    h+='<div>&nbsp;&nbsp;&nbsp;= <span class="tg">'+t1.toFixed(1)+'</span> + <span class="tr">'+t2.toFixed(1)+'</span> &minus; '+Math.abs(B)+'</div>';
+    var label = (view==='before') ? '<span class="neg">maybe tree</span>' : '<span class="pos">definitely a tree</span>';
+    h+='<div class="result">&nbsp;&nbsp;&nbsp;= <span class="'+(sc>=0?'pos':'neg')+'">'+sc.toFixed(1)+'</span> &rarr; '+label+'</div>';
+    root.querySelector('#calc').innerHTML=h;
+  }
+
+  function gaugeSVG(){
+    var pv=pooled(), sc=score(pv);
+    var W=260,H=90,x0=70,x1=W-20,y=46,range=40;
+    var cx=x0+(x1-x0)*((sc+range)/(2*range)); cx=Math.max(x0,Math.min(x1,cx));
+    var s='';
+    s+='<line x1="'+x0+'" y1="'+y+'" x2="'+x1+'" y2="'+y+'" stroke="#E2E5EC" stroke-width="6" stroke-linecap="round"/>';
+    var zero=x0+(x1-x0)*0.5;
+    s+='<line x1="'+zero+'" y1="'+(y-14)+'" x2="'+zero+'" y2="'+(y+14)+'" stroke="#9aa0ad" stroke-width="1.5" stroke-dasharray="2 2"/>';
+    s+='<text x="'+zero+'" y="'+(y+30)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="10" fill="#9aa0ad">0</text>';
+    s+='<text x="'+x0+'" y="'+(y-22)+'" font-family="Space Mono,monospace" font-size="10" fill="#b23a26">maybe tree</text>';
+    s+='<text x="'+x1+'" y="'+(y-22)+'" text-anchor="end" font-family="Space Mono,monospace" font-size="10" fill="#15805f">definitely tree</text>';
+    var col = sc>=0 ? '#1F9E8F' : '#E2563F';
+    s+='<circle cx="'+cx+'" cy="'+y+'" r="9" fill="'+col+'" stroke="#fff" stroke-width="2"/>';
+    s+='<text x="'+cx+'" y="'+(y+5)+'" text-anchor="middle" font-family="Space Mono,monospace" font-size="9" font-weight="700" fill="#fff">'+(sc>=0?'+':'')+Math.round(sc)+'</text>';
+    root.querySelector('#gauge').innerHTML=s;
+  }
+
+  function caption(){
+    var sc=score(pooled());
+    if(view==='before'){
+      return 'Averaging all nine tokens <b>before</b> attention gives a point that\u2019s mostly &ldquo;some green, a little red&rdquo;, the lone trunk patch is outvoted 8-to-1. Score = <span class="hot">'+sc.toFixed(1)+'</span>, <span class="hot">maybe tree</span>, right at the edge. The <span style="color:#cbd0da">faint</span> cluster shows the tighter spread <i>after</i> attention.';
+    }
+    return 'After one attention layer, every token carries a bit of the trunk too, the average shifts toward <span class="hot">higher redness</span> without losing its green. Score = <span class="g">'+sc.toFixed(1)+'</span>, <span class="g">definitely a tree</span>. The <span style="color:#cbd0da">faint</span> cluster shows the more scattered &ldquo;before&rdquo; positions.';
+  }
+
+  var flipped=false;
+  function fit(){ var fr=root.querySelector('#frontface'),bk=root.querySelector('#backface'),inr=root.querySelector('#inner'); inr.style.height=(flipped?bk.scrollHeight:fr.scrollHeight)+'px'; }
+  function render(){
+    Array.prototype.forEach.call(root.querySelectorAll('#seg button'),function(b){ b.classList.toggle('on',b.dataset.v===view); });
+    poolTable(); planeSVG(); calcHTML(); gaugeSVG();
+    root.querySelector('#pcap').innerHTML=caption();
+    fit();
+  }
+
+  root.querySelector('#seg').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return; view=b.dataset.v; render(); });
+  var btn=root.querySelector('#flipbtn');
+  btn.addEventListener('click',function(){ flipped=!flipped; root.querySelector('#inner').classList.toggle('flipped',flipped); btn.querySelector('.lbl').textContent=flipped?'Back to the toy':'Compare to the paper'; fit(); });
+
+  render(); window.addEventListener('load',fit); setTimeout(fit,400);
+})();
+
+</script>
+</body>
+</html>
