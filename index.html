@@ -46,7 +46,21 @@
 
   .wrap { max-width: var(--col); margin: 0 auto; padding: 0 28px; }
 
-  header.site { padding: 30px 0 8px; }
+  header.site {
+    padding: 30px 0 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  header.site .nav {
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  header.site .nav:hover { color: var(--ink); text-decoration: none; }
   .brand {
     display: inline-flex;
     align-items: center;
@@ -247,6 +261,48 @@
   }
   .verdict b { font-style: normal; color: var(--guess); font-family: var(--display); font-weight: 600; }
 
+  /* buffon demo */
+  .stepline {
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 13px; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+    padding: 9px 12px; margin-top: 10px;
+  }
+  .stepline .k { color: var(--muted); }
+  .stepline b { color: var(--truth); font-size: 15px; }
+  .stepline .pi { color: var(--guess); }
+  .stage {
+    position: relative; margin: 16px 0 6px;
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper);
+  }
+  canvas#floor { display: block; width: 100%; height: auto; }
+  .tracewrap { margin-top: 16px; }
+  .tracecap { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  svg.trace { display: block; width: 100%; height: 110px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; overflow: visible; }
+  .scale .pi-tick { color: var(--ink); font-weight: 700; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .runbtn.primary { background: var(--truth); color: #fff; border-color: var(--truth); }
+  .runbtn.primary:hover { background: #322fc7; border-color: #322fc7; }
+  .runbtn.ghost { color: var(--muted); }
+
+  /* collapsible card */
+  details.demo > summary {
+    list-style: none; cursor: pointer; user-select: none;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; outline: none;
+  }
+  details.demo > summary::-webkit-details-marker { display: none; }
+  details.demo > summary:focus-visible { outline: 2px solid var(--truth); outline-offset: 4px; border-radius: 6px; }
+  .demo-headtext { display: flex; flex-direction: column; }
+  .demo-head .figtag { display: block; margin-bottom: 14px; }
+  .demo-head .q { display: block; margin: 0; }
+  .demo-chev {
+    flex: 0 0 auto; font-family: var(--display); font-size: 13px; color: var(--muted);
+    margin-top: 2px; transition: transform 0.2s ease, color 0.15s;
+  }
+  details.demo > summary:hover .demo-chev { color: var(--ink); }
+  details.demo:not([open]) > summary .demo-chev { transform: rotate(180deg); }
+  .demo-body { margin-top: 18px; }
+
   .manifesto { padding: 56px 0 8px; font-size: 22px; line-height: 1.55; }
   .manifesto p { margin: 0 0 18px; }
   .manifesto .pull { font-family: var(--display); font-weight: 500; letter-spacing: -0.01em; }
@@ -288,6 +344,7 @@
         </svg>
         <span class="wordmark"><b>makesnosense</b><span class="dot">.</span><span class="tld">io</span></span>
       </a>
+      <a class="nav" href="./about.html">About the author</a>
     </header>
   </div>
 
@@ -297,7 +354,8 @@
       <h1 class="reveal r2">Built to be argued with, then proven.</h1>
       <p class="lede reveal r3">Some things refuse to make sense until you can poke at them. So that's what this is: hard ideas rebuilt as things you touch until they click.</p>
 
-      <div class="demo reveal r3" id="demo">
+<!-- Two envelopes demo (commented out)
+      <div class="demo reveal r3" id="demo-envelopes">
         <div class="figtag">Figure 0 &middot; drag it</div>
         <p class="q">Two envelopes. One has twice as much money as the other. You pick one and look inside. Should you switch to the other one?</p>
 
@@ -310,13 +368,13 @@
         </div>
 
         <svg class="curve" id="curve" viewBox="0 0 600 150" preserveAspectRatio="none" aria-hidden="true">
-          <line id="zeroLine" x1="0" y1="75" x2="600" y2="75" stroke="var(--ink)" stroke-width="1" stroke-dasharray="4 4" opacity="0.25"/>
-          <path id="lineDiff" fill="none" stroke="var(--truth)" stroke-width="2.5" d=""/>
-          <circle id="dotDiff" r="6" fill="var(--paper-2)" stroke="var(--truth)" stroke-width="3" cx="0" cy="0"/>
+          <line id="zeroLine" x1="0" y1="75" x2="600" y2="75" stroke="#15171E" stroke-width="1" stroke-dasharray="4 4" opacity="0.25"/>
+          <path id="lineDiff" fill="none" stroke="#3D3AE0" stroke-width="2.5" d=""/>
+          <circle id="dotDiff" r="6" fill="#FFFFFF" stroke="#3D3AE0" stroke-width="3" cx="0" cy="0"/>
         </svg>
 
         <div class="legend">
-          <span class="lg"><i style="background:var(--truth)"></i> average winnings, switch minus stay (as % of stay)</span>
+          <span class="lg"><i style="background:#3D3AE0"></i> average winnings, switch minus stay (as % of stay)</span>
         </div>
 
         <div class="slider-row">
@@ -331,6 +389,67 @@
           <p>Say your envelope has <b>A</b>. The other has either <b>A/2</b> or <b>2A</b>, each &ldquo;50/50&rdquo;. Expected value of switching = 0.5&times;(A/2) + 0.5&times;(2A) = <b>1.25A</b>. That's bigger than A, so switch. But the other envelope's owner can run the exact same argument about <i>your</i> envelope. Both can't be right, and the simulation above shows they aren't: switching wins you nothing on average.</p>
         </details>
       </div>
+-->
+
+      <details class="demo reveal r3" id="demo">
+        <summary class="demo-head">
+          <span class="demo-headtext">
+            <span class="figtag">Buffon's Needle</span>
+            <span class="q">Toss needles, each as long as the gap between the floorboards. Count how many land across a line. Why should that have anything to do with &pi;?</span>
+          </span>
+          <span class="demo-chev" aria-hidden="true">&#9650;</span>
+        </summary>
+
+        <div class="demo-body">
+        <div class="readout">
+          <span class="p">&pi; &asymp; <span id="estLabel">&mdash;</span></span>
+        </div>
+        <div class="readout" style="margin-top:8px;">
+          <span class="n"><span>dropped:</span> <b id="nLabel">0</b></span>
+          <span class="n"><span>crossed a line:</span> <b id="cLabel">0</b></span>
+          <span class="n"><span>error:</span> <b id="errLabel">&mdash;</b></span>
+        </div>
+
+        <div class="stepline" id="calc" style="margin-top:12px;">
+          <span class="k">&pi; &asymp; 2 &times; dropped &divide; crossed =</span>
+          <b>2 &times; <span id="calcN">0</span> &divide; <span id="calcC">0</span></b>
+          <span class="k">=</span> <b class="pi" id="calcEst">&mdash;</b>
+        </div>
+
+        <div class="stage">
+          <canvas id="floor" width="1200" height="640" aria-label="Needles dropped on a lined floor"></canvas>
+        </div>
+
+        <div class="legend">
+          <span class="lg"><i style="background:var(--guess)"></i> crossed a line</span>
+          <span class="lg"><i style="background:#9aa0ac"></i> landed clear</span>
+        </div>
+
+        <div class="tracewrap">
+          <div class="tracecap">the estimate after every drop &mdash; settling onto the dashed true &pi;</div>
+          <svg class="trace" id="trace" viewBox="0 0 600 110" preserveAspectRatio="none" aria-hidden="true">
+            <line id="piLine" x1="0" x2="600" stroke="var(--ink)" stroke-width="1" stroke-dasharray="4 4" opacity="0.3"/>
+            <path id="tracePath" fill="none" stroke="var(--truth)" stroke-width="2" d=""/>
+          </svg>
+          <div class="scale"><span id="traceStart">drop 1</span><span class="pi-tick">&pi; = 3.14159</span><span id="traceEnd">now</span></div>
+        </div>
+
+        <div class="controls">
+          <button class="runbtn primary" id="dropFew">Drop 1 &darr;</button>
+          <button class="runbtn" id="drop100">Drop 100</button>
+          <button class="runbtn" id="drop2000">Drop 2,000</button>
+          <button class="runbtn ghost" id="reset">Reset &#8635;</button>
+        </div>
+
+        <p class="verdict" id="verdict">Start throwing. The estimate is wild at first, then homes in on 3.14159&hellip;</p>
+
+        <details class="argument">
+          <summary>Wait &mdash; why &pi;? (the short version)</summary>
+          <p>A needle only crosses a line if it <b>reaches across the gap vertically</b>. Lying flat it reaches almost nothing; standing upright it spans the whole gap. So crossing has nothing to do with circles and everything to do with the needle's tilt.</p>
+          <p>The catch: to get the <i>overall</i> crossing chance, you have to average over every tilt angle &mdash; and the average of that reach, taken across the half-turn from flat to flat, comes out to exactly <code>2/&pi;</code>. That's the one and only place &pi; enters: it's the size of the angle range you're averaging over. Flip it around and you get the formula in the running calculation above: <code>&pi; &asymp; 2N / C</code>.</p>
+        </details>
+        </div>
+      </details>
     </section>
   </div>
 
@@ -360,6 +479,7 @@
     </footer>
   </div>
 
+<!-- Two envelopes script (commented out)
 <script>
 (function () {
   var slider = document.getElementById('slider');
@@ -429,7 +549,7 @@
     verdict.innerHTML = verdictText(n, pct);
     dotDiff.setAttribute('cx', x(n).toFixed(1));
     dotDiff.setAttribute('cy', yFromPct(pct).toFixed(1));
-    slider.style.setProperty('--fill', ((n - MINN) / (MAXN - MINN) * 100).toFixed(1) + '%');
+    slider.style.setProperty('xxfill', ((n - MINN) / (MAXN - MINN) * 100).toFixed(1) + '%');
   }
 
   buildCurve();
@@ -440,6 +560,210 @@
     update();
   });
   update();
+})();
+</script>
+-->
+
+<script>
+(function () {
+  var canvas = document.getElementById('floor');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+
+  var COL = { paper:'#F5F6F9', line:'#C9CEDA', cross:'#E2563F', clear:'#9aa0ac', ink:'#15171E' };
+
+  // Geometry: horizontal floorboard lines, needle length == spacing.
+  var GAP = 80;                 // line spacing d (px)
+  var L = GAP;                  // needle length == spacing
+  var PAD = GAP;                // top/bottom padding so first/last lines have room
+  var firstLine = PAD;
+  var lastLine = H - PAD;
+  var nLines = Math.floor((lastLine - firstLine) / GAP) + 1;
+
+  var total = 0, crossed = 0;
+  var needles = [];             // recent needles drawn (capped for perf)
+  var MAX_DRAWN = 1500;
+  var history = [];             // running pi estimate after each drop that has crossed>0
+  var MAX_HIST = 3000;
+
+  var estLabel = document.getElementById('estLabel');
+  var nLabel = document.getElementById('nLabel');
+  var cLabel = document.getElementById('cLabel');
+  var errLabel = document.getElementById('errLabel');
+  var verdict = document.getElementById('verdict');
+  var calcN = document.getElementById('calcN');
+  var calcC = document.getElementById('calcC');
+  var calcEst = document.getElementById('calcEst');
+
+  // ---- convergence trace ----
+  var trace = document.getElementById('trace');
+  var tracePath = document.getElementById('tracePath');
+  var piLine = document.getElementById('piLine');
+  var traceStart = document.getElementById('traceStart');
+  var traceEnd = document.getElementById('traceEnd');
+  var TW = 600, TH = 110, PI_LO = 2.4, PI_HI = 3.9; // y window around pi
+  function ty(v) {
+    var c = Math.max(PI_LO, Math.min(PI_HI, v));
+    return TH - (c - PI_LO) / (PI_HI - PI_LO) * TH;
+  }
+  piLine.setAttribute('y1', ty(Math.PI).toFixed(1));
+  piLine.setAttribute('y2', ty(Math.PI).toFixed(1));
+
+  function drawTrace() {
+    var len = history.length;
+    if (len === 0) { tracePath.setAttribute('d', ''); traceStart.textContent = 'drop 1'; traceEnd.textContent = 'now'; return; }
+    var d = '';
+    for (var i = 0; i < len; i++) {
+      var px = len === 1 ? 0 : (i / (len - 1) * TW);
+      d += (i === 0 ? 'M' : 'L') + px.toFixed(1) + ',' + ty(history[i]).toFixed(1) + ' ';
+    }
+    tracePath.setAttribute('d', d.trim());
+    traceStart.textContent = 'drop ' + (total - len + 1).toLocaleString();
+    traceEnd.textContent = total.toLocaleString() + ' drops';
+  }
+
+  function lineY(i) { return firstLine + i * GAP; }
+
+  function drawFloor() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = COL.paper;
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = COL.line;
+    ctx.lineWidth = 1.5;
+    for (var i = 0; i < nLines; i++) {
+      var y = lineY(i);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
+    }
+  }
+
+  function drawNeedle(n) {
+    ctx.strokeStyle = n.hit ? COL.cross : COL.clear;
+    ctx.lineWidth = n.hit ? 2.4 : 1.8;
+    ctx.lineCap = 'round';
+    ctx.globalAlpha = n.hit ? 0.95 : 0.6;
+    ctx.beginPath();
+    ctx.moveTo(n.x1, n.y1);
+    ctx.lineTo(n.x2, n.y2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  function redrawAll() {
+    drawFloor();
+    for (var i = 0; i < needles.length; i++) drawNeedle(needles[i]);
+  }
+
+  // Drop one needle: random center anywhere over the lined region, random angle.
+  function makeNeedle() {
+    var cx = Math.random() * W;
+    var cy = firstLine - GAP * 0.5 + Math.random() * ((lastLine - firstLine) + GAP);
+    var theta = Math.random() * Math.PI;     // 0..pi
+    var dx = (L / 2) * Math.cos(theta);
+    var dy = (L / 2) * Math.sin(theta);
+    var y1 = cy - dy, y2 = cy + dy;
+    // Crosses a line if the integer "band index" differs at the two ends.
+    var band1 = Math.floor((y1 - firstLine) / GAP);
+    var band2 = Math.floor((y2 - firstLine) / GAP);
+    var hit = band1 !== band2;
+    return { x1: cx - dx, y1: y1, x2: cx + dx, y2: y2, hit: hit };
+  }
+
+  function updateLabels() {
+    nLabel.textContent = total.toLocaleString();
+    cLabel.textContent = crossed.toLocaleString();
+    calcN.textContent = total.toLocaleString();
+    calcC.textContent = crossed.toLocaleString();
+    if (crossed > 0) {
+      var est = (2 * L * total) / (GAP * crossed); // L==GAP -> 2*total/crossed
+      estLabel.textContent = est.toFixed(5);
+      calcEst.textContent = est.toFixed(5);
+      var err = Math.abs(est - Math.PI) / Math.PI * 100;
+      errLabel.textContent = err.toFixed(2) + '%';
+      setVerdict(total, est, err);
+    } else {
+      estLabel.textContent = '\u2014';
+      calcEst.textContent = '\u2014';
+      errLabel.textContent = '\u2014';
+    }
+    drawTrace();
+  }
+
+  function setVerdict(n, est, err) {
+    if (n < 30) {
+      verdict.innerHTML = 'Way too few to trust &mdash; the estimate jumps around. Keep dropping.';
+    } else if (err < 0.5) {
+      verdict.innerHTML = 'Locked onto <b>' + est.toFixed(4) + '</b>, within ' + err.toFixed(2) + '% of &pi;. Straight sticks, no circles, and there it is.';
+    } else {
+      verdict.innerHTML = 'At ' + n.toLocaleString() + ' needles it reads <b>' + est.toFixed(4) + '</b>. Throw a few thousand more and the error keeps shrinking toward &pi;.';
+    }
+  }
+
+  function recordPoint() {
+    if (crossed > 0) {
+      history.push((2 * L * total) / (GAP * crossed));
+      if (history.length > MAX_HIST) history.shift();
+    }
+  }
+
+  function drop(k) {
+    for (var i = 0; i < k; i++) {
+      var n = makeNeedle();
+      total++;
+      if (n.hit) crossed++;
+      needles.push(n);
+      recordPoint();
+    }
+    if (needles.length > MAX_DRAWN) needles.splice(0, needles.length - MAX_DRAWN);
+    redrawAll();
+    updateLabels();
+  }
+
+  function reset() {
+    total = 0; crossed = 0; needles = []; history = [];
+    drawFloor();
+    updateLabels();
+    verdict.innerHTML = 'Start throwing. The estimate is wild at first, then homes in on 3.14159&hellip;';
+  }
+
+  // Animated single drop: little fall-in effect.
+  function dropOneAnimated() {
+    var n = makeNeedle();
+    total++;
+    if (n.hit) crossed++;
+    needles.push(n);
+    recordPoint();
+    if (needles.length > MAX_DRAWN) needles.splice(0, needles.length - MAX_DRAWN);
+    updateLabels();
+    var steps = 8, i = 0;
+    function frame() {
+      redrawAll();
+      ctx.save();
+      ctx.strokeStyle = n.hit ? COL.cross : COL.ink;
+      ctx.globalAlpha = 0.25 * (1 - i / steps);
+      ctx.lineWidth = 8;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(n.x1, n.y1);
+      ctx.lineTo(n.x2, n.y2);
+      ctx.stroke();
+      ctx.restore();
+      i++;
+      if (i <= steps) requestAnimationFrame(frame);
+      else redrawAll();
+    }
+    frame();
+  }
+
+  document.getElementById('dropFew').addEventListener('click', function () { dropOneAnimated(); });
+  document.getElementById('drop100').addEventListener('click', function () { drop(100); });
+  document.getElementById('drop2000').addEventListener('click', function () { drop(2000); });
+  document.getElementById('reset').addEventListener('click', reset);
+
+  drawFloor();
+  updateLabels();
 })();
 </script>
 
