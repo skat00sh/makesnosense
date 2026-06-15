@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About the author · makesnosense.io</title>
+<meta name="description" content="Who builds these, and why each idea here is meant to be argued with, then proven." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='22' r='6' fill='%23E2563F'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #F5F6F9;
+    --paper-2: #FFFFFF;
+    --ink: #15171E;
+    --muted: #5A6172;
+    --line: #E2E5EC;
+    --truth: #3D3AE0;
+    --guess: #E2563F;
+    --truth-wash: #ECEBFB;
+
+    --display: 'Space Grotesk', system-ui, sans-serif;
+    --body: 'Newsreader', Georgia, serif;
+    --mono: 'Space Mono', ui-monospace, monospace;
+
+    --col: 720px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 19px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a { color: var(--truth); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  .wrap { max-width: var(--col); margin: 0 auto; padding: 0 28px; }
+
+  header.site { padding: 30px 0 8px; }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: inherit;
+  }
+  a.brand:hover, a.brand:hover * { text-decoration: none; }
+  .brand svg.logo-mark {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+    display: block;
+  }
+  .brand .wordmark {
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1px;
+  }
+  .brand .wordmark b { font-weight: 700; }
+  .brand .wordmark .tld { color: var(--muted); }
+  .brand .wordmark .dot { color: var(--guess); font-weight: 700; }
+
+  .hero { padding: 52px 0 8px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    margin: 0 0 22px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(34px, 5.6vw, 52px);
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+    margin: 0 0 22px;
+  }
+  h1 .accent { color: var(--guess); }
+  .lede {
+    font-size: 21px;
+    color: var(--muted);
+    margin: 0 0 8px;
+    max-width: 34em;
+  }
+
+  /* author identity row */
+  .who {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 36px 0 8px;
+  }
+  .who .mark {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--truth-wash);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    color: var(--truth);
+  }
+  .who .meta .name {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+  }
+  .who .meta .role {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .prose { padding: 28px 0 8px; }
+  .prose p { margin: 0 0 20px; }
+  .prose .pull {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 23px;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 36px 0;
+  }
+  .prose em { font-style: italic; }
+  .prose b { font-weight: 500; color: var(--ink); }
+
+  /* interactive stance card (interactive-first signature) */
+  .demo {
+    margin: 40px 0 8px;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 28px 22px;
+    box-shadow: 0 1px 0 rgba(21,23,30,0.03), 0 18px 40px -28px rgba(21,23,30,0.22);
+  }
+  .demo .figtag {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .demo .q {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 21px;
+    line-height: 1.3;
+    margin: 0 0 18px;
+    letter-spacing: -0.01em;
+  }
+  .stance {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .stance button {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 8px 13px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .stance button:hover { border-color: #cbd0da; }
+  .stance button[aria-pressed="true"] {
+    border-color: var(--truth);
+    background: var(--truth-wash);
+    color: var(--truth);
+  }
+  .verdict {
+    font-family: var(--body);
+    font-style: italic;
+    font-size: 17px;
+    color: var(--muted);
+    margin-top: 16px;
+    min-height: 3.2em;
+    line-height: 1.6;
+  }
+  .verdict b { font-style: normal; color: var(--guess); font-family: var(--display); font-weight: 600; }
+  .verdict .truth { color: var(--truth); }
+
+  /* topic-list: real bullets, bold lead label */
+  .topic-list { margin: 6px 0 0; padding-left: 22px; }
+  .topic-list li { margin-bottom: 10px; color: #2c2f38; font-size: 17.5px; line-height: 1.55; }
+  .topic-list li b { font-weight: 600; color: var(--ink); }
+
+  /* reading-list: borderless hairline rows, indigo bold links */
+  .reading-list { list-style: none; margin: 6px 0 0; padding: 0; }
+  .reading-list li {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 16.5px;
+    line-height: 1.5;
+  }
+  .reading-list li:last-child { border-bottom: 0; }
+  .reading-list a { color: var(--truth); font-weight: 600; }
+  .reading-list .note { color: var(--muted); font-size: 14.5px; display: block; margin-top: 3px; }
+
+  .section-head {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    margin: 56px 0 12px;
+  }
+
+  footer.site {
+    padding: 64px 0 60px;
+    margin-top: 24px;
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+    font-family: var(--mono); font-size: 12.5px; color: var(--muted);
+  }
+  footer.site a { color: var(--muted); }
+  footer.site a:hover { color: var(--ink); }
+
+  @media (max-width: 560px) {
+    body { font-size: 18px; }
+    .demo { padding: 22px 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  .reveal { opacity: 0; transform: translateY(10px); animation: rise 0.7s cubic-bezier(.2,.7,.2,1) forwards; }
+  .r2 { animation-delay: 0.08s; }
+  .r3 { animation-delay: 0.16s; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+
+  <div class="wrap">
+    <header class="site">
+      <a class="brand" href="./index.html" aria-label="makesnosense.io home">
+        <svg class="logo-mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M 41 5 C 28 5, 17 13, 13 25 L 25 30 C 28 22, 34 17, 42 17 C 51 17, 58 23, 58 31 C 58 39, 53 44, 44 49 C 34 55, 29 62, 29 71 L 41 71 C 41 63, 45 58, 53 54 C 64 48, 70 41, 70 30 C 70 16, 58 5, 41 5 Z" fill="#15171E"/>
+          <circle cx="36" cy="86" r="11.5" fill="#E2563F"/>
+          <path d="M 31 86 L 35 90 L 42 81" stroke="#FFFFFF" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="wordmark"><b>makesnosense</b><span class="dot">.</span><span class="tld">io</span></span>
+      </a>
+    </header>
+  </div>
+
+  <div class="wrap">
+    <section class="hero">
+      <p class="eyebrow reveal">About the author</p>
+      <h1 class="reveal r2">I build the demo I wish I'd had <span class="accent">before</span> I believed the math.</h1>
+      <p class="lede reveal r3">My name is Devendra. I make the hard ideas on this site into things you can poke at, because that is the only way I ever actually trusted them myself.</p>
+
+      <!-- <div class="who reveal r3">
+        <div class="mark" aria-hidden="true">DV</div>
+        <div class="meta">
+          <div class="name">Devendra Vyas</div>
+          <div class="role">Machine Learning Engineer · Germering, DE</div>
+        </div>
+      </div> -->
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section class="prose">
+      <p>For a long time I learned things the borrowed way: someone hands you an analogy from a field you already know, you nod, and you move on without ever checking whether the analogy carries any weight. It always felt to me a little like paying for the idea on credit. The understanding looks like it is there, until the day you need it and the bill comes due.</p>
+
+      <p>So I started rebuilding ideas from their own foundations instead. One small picture instead of a dataset. One running example I could hold in my head. No step I had not done by hand at least once. When I got to the end and the thing still worked, I trusted it, and the trust was the kind you cannot argue me out of, because I had watched it happen.</p>
+
+      <p class="pull">A good explanation can be argued with. A good demo can't.</p>
+
+      <p>That sentence is the whole site. Everything here starts where your intuition is confident but the foundational understanding quietly disagrees, then hands you the controls so you can settle it yourself rather than take my word for it. I would rather you leave disagreeing with me than nodding along, as long as you disagree at the controls.</p>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section>
+      <div class="demo reveal">
+        <div class="figtag">Pick one</div>
+        <p class="q">When you meet a counterintuitive claim, what do you reach for first?</p>
+
+        <div class="stance" role="group" aria-label="Choose how you approach a claim">
+          <button type="button" data-k="trust" aria-pressed="false">Trust the source</button>
+          <button type="button" data-k="analogy" aria-pressed="false">Find an analogy</button>
+          <button type="button" data-k="build" aria-pressed="false">Build the smallest version</button>
+        </div>
+
+        <p class="verdict" id="verdict">Go ahead, choose one. There is no wrong answer, only one I keep coming back to.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section>
+      <p class="section-head">What I do when I'm not building these</p>
+      <ul class="topic-list">
+        <li><b>Day job.</b> I work as a freelance machine learning engineer, mostly the unglamorous middle of the pipeline where the data is messy and the wins are quiet.</li>
+        <li><b>Reading first principles.</b> I keep a slow habit of reading original papers rather than summaries of them, then trying to rebuild the one figure that does the real work.</li>
+        <li><b>Keeping it honest.</b> This site runs entirely in your browser. No cookies, no tracking, no forms, no external anything beyond the fonts. That is a value here, not an afterthought.</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section>
+      <p class="section-head">Find me elsewhere</p>
+      <ul class="reading-list">
+        <li>
+          <a href="mailto:vyas.dev.ms@gmail.com">Email</a>
+          <span class="note">The fastest way to argue with me about something on this site.</span>
+        </li>
+        <li>
+          <a href="./index.html">The latest build</a>
+          <span class="note">Start at the home page if you would rather poke than read.</span>
+        </li>
+        <li>
+          <a href="./vit.html">Vision Transformers, by hand</a>
+          <span class="note">One small image, built up from patches with nothing borrowed from language.</span>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <footer class="site">
+      <span>makesnosense.io</span>
+      <span>built to be argued with, then proven</span>
+      <span><a href="./impressum.html">Impressum</a> &nbsp;&middot;&nbsp; <a href="./datenschutz.html">Datenschutz</a></span>
+    </footer>
+  </div>
+
+<script>
+(function () {
+  var verdict = document.getElementById('verdict');
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('.stance button'));
+
+  var lines = {
+    trust: 'Honest, and most of us start here. But a trusted source is still a proxy for understanding: it tells you <b>what</b> to believe, never <b>why</b> it holds. Useful right up until the moment you need to fix something it got wrong.',
+    analogy: 'My old default. An analogy borrows confidence from a field you already trust, which feels like understanding and sometimes is. The trouble is you rarely check where the analogy <b>stops carrying weight.</b>',
+    build: 'This is the one I keep coming back to. Strip the claim to its smallest working version, run it, and watch it land. <span class="truth">Then</span> the explanation is something you can argue with, because you already proved it.'
+  };
+
+  function choose(btn) {
+    buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
+    verdict.innerHTML = lines[btn.getAttribute('data-k')];
+  }
+
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () { choose(b); });
+  });
+})();
+</script>
+
+<script src="./cookie-notice.js"></script>
+</body>
+</html>
